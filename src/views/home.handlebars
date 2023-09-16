@@ -1,17 +1,9 @@
-<html>
-    <head>
-        <title>Home</title>
-    </head>
-    <body>
-        <h1>Productos</h1>
+<h1>Productos</h1>
 
-        {{#each products}}
-            <div>
-                <h2>{{this.title}}</h2>
-                <p>{{this.description}}</p>
-                <!-- Muestra más información del producto aquí -->
-            </div>
-        {{/each}}
-
-    </body>
-</html>
+{{#each products}}
+    <div>
+        <h2>{{this.title}}</h2>
+        <p>{{this.description}}</p>
+        <!-- Muestra más información del producto aquí -->
+    </div>
+{{/each}}

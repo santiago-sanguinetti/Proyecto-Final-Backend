@@ -1,12 +1,28 @@
 import path from "path";
 import express from "express";
 import exphbs from "express-handlebars";
+import http from "http";
+import { Server } from "socket.io";
 import mongoose from "mongoose";
 import __dirname from "./utils.js";
 import productRouter from "./routes/products.router.js";
+import cartRouter from "./routes/carts.router.js";
+import viewsRouter from "./routes/views.router.js";
 
 const app = express();
+
+//Config socket.io
+const server = http.createServer(app);
+export const io = new Server(server);
 const PORT = 8080;
+
+io.on("connection", (socket) => {
+    console.log("Un cliente se ha conectado.");
+});
+
+server.listen(PORT, () => {
+    console.log("El servidor está escuchando en el puerto 8080");
+});
 
 //Config Express
 app.use(express.json());
@@ -18,10 +34,6 @@ app.set("views", path.join(__dirname, "views"));
 app.engine("handlebars", exphbs.engine());
 app.set("view engine", "handlebars");
 
-const server = app.listen(PORT, () => {
-    console.log("Server ON");
-});
-
 //Config Mongo
 const dbURI =
     "mongodb+srv://CoderUser:00UIDh6iSAQPHj28@ecommerce.dn98uin.mongodb.net/?retryWrites=true&w=majority";
@@ -32,4 +44,6 @@ mongoose
     .catch((err) => console.log(err));
 
 //Config rutas
+app.use("/", viewsRouter);
 app.use("/api/products", productRouter);
+app.use("/api/carts", cartRouter);
