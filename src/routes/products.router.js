@@ -1,6 +1,6 @@
 import express from "express";
 import { productModel } from "../dao/models/products.model.js";
-import { io } from "../app.js";
+import { socket } from "../app.js";
 
 const router = express.Router();
 
@@ -47,7 +47,7 @@ router.post("/", async (req, res) => {
         const newProduct = await product.save();
 
         //Emite un evento "product-created" cada vez que se crea un producto
-        io.emit("product-created", newProduct);
+        socket.emit("product-created", newProduct);
 
         res.status(201).json(newProduct);
     } catch (err) {
@@ -102,7 +102,7 @@ router.delete("/:pid", async (req, res) => {
         await product.deleteOne();
 
         // Emite un evento 'product-deleted' cada vez que se elimina un producto
-        io.emit("product-deleted", req.params.pid);
+        socket.emit("product-deleted", req.params.pid);
 
         res.json({ message: "Producto eliminado" });
     } catch (err) {

@@ -13,15 +13,14 @@ const app = express();
 
 //Config socket.io
 const server = http.createServer(app);
-export const io = new Server(server);
+const io = new Server(server);
 const PORT = 8080;
-
-io.on("connection", (socket) => {
-    console.log("Un cliente se ha conectado.");
-});
 
 server.listen(PORT, () => {
     console.log("El servidor está escuchando en el puerto 8080");
+});
+export const socket = io.on("connection", (socket) => {
+    console.log("Un cliente se ha conectado.");
 });
 
 //Config Express

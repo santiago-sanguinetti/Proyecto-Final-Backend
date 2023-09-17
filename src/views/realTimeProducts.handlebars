@@ -1,5 +1,14 @@
-<h1>Productos</h1>
-<ul id="products"></ul>
+<h1>Productos en tiempo real</h1>
 
-<script src="../public/realTimeProducts.js"></script>
+<div id="products">
+    {{#each products}}
+        <div id="{{this._id}}">
+            <h2>{{this.title}}</h2>
+            <p>{{this.description}}</p>
+            <!-- Más info del producto -->
+        </div>
+    {{/each}}
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
+<script src="/js/realTimeProducts.js"></script>
