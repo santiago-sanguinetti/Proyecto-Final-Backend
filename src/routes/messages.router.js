@@ -12,7 +12,6 @@ router.post("/", async (req, res) => {
 
     try {
         const newMessage = await message.save();
-
         // Emitir el evento 'message' a todos los clientes
         socket.emit("message", newMessage);
 

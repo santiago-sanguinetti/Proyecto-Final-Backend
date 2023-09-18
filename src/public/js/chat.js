@@ -1,4 +1,4 @@
-const socket = io();
+import { socket } from "../../app.js";
 
 // Escuchar el evento 'message'
 socket.on("message", (message) => {
@@ -34,7 +34,7 @@ document.getElementById("message-form").addEventListener("submit", (e) => {
     const user = messageUser.value;
     console.log(user, message);
     // Emitir el evento 'send-message'
-    socket.emit("send-message", JSON.parse({ user: user, message: message }));
+    socket.emit("send-message", { user: user, message: message });
 
     // Limpiar el input
     messageInput.value = "";

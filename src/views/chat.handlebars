@@ -9,12 +9,20 @@
     {{/each}}
 </div>
 
-<form id="message-form">
-    <input type="text" id="message-user" placeholder="Email" required />
+<form id="message-form" action="/api/chat" method="post">
+
+    <input
+        type="text"
+        id="message-user"
+        placeholder="Email"
+        name="user"
+        required
+    />
     <input
         type="text"
         id="message-input"
         placeholder="Ingrese su mensaje aquí"
+        name="msg"
         required
     />
     <button type="submit">Enviar</button>
