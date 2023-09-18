@@ -8,6 +8,7 @@ import __dirname from "./utils.js";
 import productRouter from "./routes/products.router.js";
 import cartRouter from "./routes/carts.router.js";
 import viewsRouter from "./routes/views.router.js";
+import chatRouter from "./routes/messages.router.js";
 
 const app = express();
 
@@ -46,3 +47,11 @@ mongoose
 app.use("/", viewsRouter);
 app.use("/api/products", productRouter);
 app.use("/api/carts", cartRouter);
+app.use("/api/chat", chatRouter);
+
+//Config chat
+// let messages = [];
+// socket.on("message", (data) => {
+//     messages.push(data);
+//     io.emit("messageLogs", messages);
+// });
