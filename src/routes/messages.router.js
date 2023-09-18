@@ -14,8 +14,8 @@ router.post("/", async (req, res) => {
         const newMessage = await message.save();
         // Emitir el evento 'message' a todos los clientes
         socket.emit("message", newMessage);
-
-        res.status(201).json(newMessage);
+        const messages = await msgModel.find().lean();
+        res.render("chat", { messages });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
