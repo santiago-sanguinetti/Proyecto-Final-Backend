@@ -1,15 +1,66 @@
 import express from "express";
+import mongoose from "mongoose";
 import { productModel } from "../dao/models/products.model.js";
 import { socket } from "../app.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10; // Si no se proporciona un límite, se establece un valor predeterminado
+    const page = Number(req.query.page) || 1;
+    const sort = req.query.sort;
+    const query = req.query.query;
+
+    let sortObject = {};
+    if (sort === "asc") {
+        sortObject.price = 1;
+    } else if (sort === "desc") {
+        sortObject.price = -1;
+    }
+
+    let queryObject = {};
+
+    if (query) {
+        queryObject.$or = [
+            { category: { $regex: query, $options: "i" } },
+            { status: { $regex: query, $options: "i" } },
+        ];
+    }
+
     try {
-        const limit = parseInt(req.query.limit) || 10; // Si no se proporciona un límite, se establece un valor predeterminado
-        const products = await productModel.find().limit(limit).lean();
-        console.log(products);
-        res.render("home", { products });
+        const products = await productModel
+            .find()
+            .lean()
+            .sort(sortObject)
+            .limit(limit)
+            .skip((page - 1) * limit)
+            .exec();
+
+        const totalProducts = await productModel
+            .countDocuments(queryObject)
+            .exec();
+        const totalPages = Math.ceil(totalProducts / limit);
+        const prevPage = page > 1 ? page - 1 : null;
+        const nextPage = page < totalPages ? page + 1 : null;
+
+        res.json({
+            status: "success",
+            payload: products,
+            totalPages: totalPages,
+            prevPage: prevPage,
+            nextPage: nextPage,
+            page: page,
+            hasPrevPage: prevPage !== null,
+            hasNextPage: nextPage !== null,
+            prevLink: prevPage
+                ? `/productos?page=${prevPage}&limit=${limit}`
+                : null,
+            nextLink: nextPage
+                ? `/productos?page=${nextPage}&limit=${limit}`
+                : null,
+        });
+        // console.log(products);
+        // res.render("home", { products });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
