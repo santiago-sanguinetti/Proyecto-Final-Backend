@@ -1,4 +1,5 @@
 import { Router } from "express";
+import mongoose from "mongoose";
 import { productModel } from "../dao/models/products.model.js";
 import { cartModel } from "../dao/models/carts.model.js";
 
@@ -64,14 +65,13 @@ router.get("/products", async (req, res) => {
 router.get("/cart", async (req, res) => {
     //Por ahora funciona con un solo carrito luego funcionará con :cid
     const { cid } = req.params;
-    console.log(cid);
 
     try {
         const cart = await cartModel
-            .findById("6509ec5bdc95728198f484f9") //cid
-            .populate("products")
+            .findById("650a07c3860aebb9f03b2e69") //cid
+            .populate("products.productId")
             .lean();
-        console.log(cart);
+        console.log(JSON.stringify(cart, null, 2));
         res.render("cart", { cart: cart });
     } catch (err) {
         res.status(500).send(err.message);

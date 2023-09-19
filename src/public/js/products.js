@@ -1,7 +1,8 @@
 function agregarAlCarrito(event, productId) {
     event.preventDefault();
 
-    fetch(`/api/carts/6509ec5bdc95728198f484f9/product/${productId}`, {
+    //Cambiar luego a :cid
+    fetch(`/api/carts/650a07c3860aebb9f03b2e69/product/${productId}`, {
         method: "POST",
     })
         .then((response) => {
