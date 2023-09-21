@@ -4,9 +4,16 @@ import { checkAuth, checkNotAuth } from "./views.router.js";
 
 const router = express.Router();
 
+function isAdmin(email, password) {
+    const adminEmail = "adminCoder@coder.com";
+    const adminPassword = "adminCod3r123";
+    //Devuelve un booleano si coinciden los datos
+    return email === adminEmail && password === adminPassword;
+}
 router.post("/register", checkNotAuth, async (req, res) => {
     try {
         const { first_name, last_name, email, age, password } = req.body;
+        //Si se quisiera guardar el admin en la base de datos se puede registrar con estos datos
         const role =
             email === "adminCoder@coder.com" && password === "adminCod3r123"
                 ? "admin"
@@ -19,7 +26,7 @@ router.post("/register", checkNotAuth, async (req, res) => {
             password,
             role,
         });
-        console.log(user);
+
         await user.save();
         req.session.user = user;
         res.redirect("/products");
@@ -30,12 +37,18 @@ router.post("/register", checkNotAuth, async (req, res) => {
 
 router.post("/login", checkNotAuth, async (req, res) => {
     const { email, password } = req.body;
-    const user = await userModel.findOne({ email, password });
-    if (user) {
-        req.session.user = user;
-        res.redirect("/products");
+    if (isAdmin(email, password)) {
+        req.session.user = { email, role: "admin" };
+        res.redirect("/profile");
     } else {
-        res.redirect("/login");
+        const user = await userModel.findOne({ email, password });
+
+        if (user) {
+            req.session.user = user;
+            res.redirect("/products");
+        } else {
+            res.redirect("/login");
+        }
     }
 });
 

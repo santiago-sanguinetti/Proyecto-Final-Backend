@@ -6,13 +6,14 @@ import { cartModel } from "../dao/models/carts.model.js";
 const router = Router();
 
 router.get("/", async (req, res) => {
-    try {
-        const limit = parseInt(req.query.limit) || 10; // Si no se proporciona un límite, se establece un valor predeterminado
-        const products = await productModel.find().limit(limit).lean();
-        res.render("home", { products });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+    // try {
+    //     const limit = parseInt(req.query.limit) || 10; // Si no se proporciona un límite, se establece un valor predeterminado
+    //     const products = await productModel.find().limit(limit).lean();
+    //     res.render("home", { products });
+    // } catch (err) {
+    //     res.status(500).json({ message: err.message });
+    // }
+    res.redirect("/login");
 });
 
 router.get("/realtimeproducts", async (req, res) => {
@@ -24,7 +25,7 @@ router.get("/realtimeproducts", async (req, res) => {
     }
 });
 
-router.get("/products", async (req, res) => {
+router.get("/products", checkAuth, async (req, res) => {
     const limit = Number(req.query.limit) || 10;
     const page = Number(req.query.page) || 1;
 
@@ -40,8 +41,8 @@ router.get("/products", async (req, res) => {
         const totalPages = Math.ceil(totalProducts / limit);
         const prevPage = page > 1 ? page - 1 : null;
         const nextPage = page < totalPages ? page + 1 : null;
-
         res.render("products", {
+            user: req.session.user,
             products: products,
             totalPages: totalPages,
             prevPage: prevPage,
