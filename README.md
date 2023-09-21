@@ -10,4 +10,17 @@ El proyecto ahora incluye las siguientes funcionalidades:
 
 ## Uso
 
-Para utilizar este proyecto, primero debes instalar las dependencias con `npm install`. Luego, puedes iniciar el servidor con `npm start` o `npm run dev` para iniciar el servidor en modo de desarrollo con nodemon.
+1. Descarga o clona este repositorio a tu máquina local:
+   ```bash
+   git clone -b entrega/clase_19 https://github.com/santiago-sanguinetti/Backend-ProyectoFinal.git
+   ```
+2. Abre una terminal en la ubicación del repositorio clonado.
+   
+3. Instala las dependencias utilizando npm:
+   ```bash
+   npm install
+   ```
+4. Inicia el servidor con 
+   ```bash
+   npm start
+   ```
