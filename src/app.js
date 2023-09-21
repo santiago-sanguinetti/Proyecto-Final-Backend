@@ -1,5 +1,6 @@
 import path from "path";
 import express from "express";
+import session from "express-session";
 import exphbs from "express-handlebars";
 import http from "http";
 import { Server } from "socket.io";
@@ -9,8 +10,16 @@ import productRouter from "./routes/products.router.js";
 import cartRouter from "./routes/carts.router.js";
 import viewsRouter from "./routes/views.router.js";
 import chatRouter from "./routes/messages.router.js";
+import sessionRouter from "./routes/sessions.router.js";
 
 const app = express();
+app.use(
+    session({
+        secret: "secretCoder",
+        resave: false,
+        saveUninitialized: true,
+    })
+);
 
 //Config socket.io
 const server = http.createServer(app);
@@ -48,6 +57,7 @@ app.use("/", viewsRouter);
 app.use("/api/products", productRouter);
 app.use("/api/carts", cartRouter);
 app.use("/api/chat", chatRouter);
+app.use("/api/sessions", sessionRouter);
 
 //Config chat
 // let messages = [];

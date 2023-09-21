@@ -1,0 +1,6 @@
+<h1>Bienvenido, {{user.first_name}} {{user.last_name}}</h1>
+<p>Correo electrónico: {{user.email}}</p>
+<p>Edad: {{user.age}}</p>
+<form action="/logout" method="post">
+    <input type="submit" value="Cerrar sesión" />
+</form>
