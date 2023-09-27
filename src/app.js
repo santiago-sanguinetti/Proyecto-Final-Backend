@@ -11,15 +11,20 @@ import cartRouter from "./routes/carts.router.js";
 import viewsRouter from "./routes/views.router.js";
 import chatRouter from "./routes/messages.router.js";
 import sessionRouter from "./routes/sessions.router.js";
+import passport from "passport";
+import initializePassport from "./config/passport.config.js";
 
 const app = express();
 app.use(
     session({
-        secret: "secretCoder",
+        secret: "sUmHiS3cuR1tYS3crEtC0d3",
         resave: false,
         saveUninitialized: true,
     })
 );
+initializePassport();
+app.use(passport.initialize());
+app.use(passport.session());
 
 //Config socket.io
 const server = http.createServer(app);
@@ -58,10 +63,3 @@ app.use("/api/products", productRouter);
 app.use("/api/carts", cartRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/sessions", sessionRouter);
-
-//Config chat
-// let messages = [];
-// socket.on("message", (data) => {
-//     messages.push(data);
-//     io.emit("messageLogs", messages);
-// });
