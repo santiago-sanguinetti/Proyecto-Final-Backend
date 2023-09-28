@@ -3,13 +3,9 @@ import local from "passport-local";
 import GitHubStrategy from "passport-github2";
 import { userModel } from "../dao/models/users.model.js";
 import bcrypt from "bcrypt";
+import { adminUser, isAdmin } from "./admin.config.js";
 const LocalStrategy = local.Strategy;
-function isAdmin(email, password) {
-    const adminEmail = "adminCoder@coder.com";
-    const adminPassword = "123"; //"adminCod3r123";
-    //Devuelve un booleano si coinciden los datos
-    return email === adminEmail && password === adminPassword;
-}
+
 const initializePassport = () => {
     passport.use(
         "register",
@@ -49,15 +45,7 @@ const initializePassport = () => {
             async (username, password, done) => {
                 try {
                     if (isAdmin(username, password)) {
-                        console.log(username);
-                        return done(null, {
-                            _id: "42",
-                            first_name: "Admin",
-                            last_name: "",
-                            Age: 42,
-                            email: username,
-                            role: "admin",
-                        });
+                        return done(null, adminUser);
                     } else {
                         const user = await userModel.findOne({
                             email: username,
@@ -70,7 +58,6 @@ const initializePassport = () => {
                                 message: "Invalid username or password",
                             });
                         }
-
                         return done(null, user);
                     }
                 } catch (err) {
@@ -122,8 +109,9 @@ const initializePassport = () => {
     });
 
     passport.deserializeUser(async (id, done) => {
-        let user = await userModel.findById(id);
-        done(null, user);
+        id !== "42"
+            ? await userModel.findById(id).then((user) => done(null, user))
+            : done(null, adminUser);
     });
 };
 
