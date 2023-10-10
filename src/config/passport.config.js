@@ -112,9 +112,11 @@ const initializePassport = () => {
         done(null, user._id);
     });
 
-    passport.deserializeUser(async (id, done) => {
-        id !== "42"
-            ? await userModel.findById(id).then((user) => done(null, user))
+    passport.deserializeUser(async (email, done) => {
+        email !== adminUser.email
+            ? await userModel
+                  .findOne({ email: email })
+                  .then((user) => done(null, user))
             : done(null, adminUser);
     });
 };
