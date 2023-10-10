@@ -9,12 +9,9 @@ router.post(
     "/register",
     checkNotAuth,
     passport.authenticate("register", {
+        successRedirect: "/login",
         failureRedirect: "/register",
-    }),
-    async (req, res) => {
-        req.session.user = user;
-        res.redirect("/login");
-    }
+    })
 );
 
 router.post(
@@ -36,6 +33,7 @@ router.post(
                   age: req.user.age,
                   email: req.user.email,
                   role: req.user.role,
+                  cart: req.user.cart,
               });
         res.redirect("/profile");
     }
@@ -61,5 +59,10 @@ router.get(
         res.redirect("/");
     }
 );
+
+router.get("/current", async (req, res) => {
+    console.log(req.session.user);
+    res.send(req.session.user);
+});
 
 export default router;

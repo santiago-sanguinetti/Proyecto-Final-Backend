@@ -13,4 +13,5 @@ export const adminUser = {
     age: 42,
     password: "adminCod3r123",
     role: "admin",
+    cart: "6509ec5bdc95728198f484f9",
 };

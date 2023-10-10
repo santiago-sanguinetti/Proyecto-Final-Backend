@@ -4,6 +4,7 @@ import GitHubStrategy from "passport-github2";
 import { userModel } from "../dao/models/users.model.js";
 import bcrypt from "bcrypt";
 import { adminUser, isAdmin } from "./admin.config.js";
+import { cartModel } from "../dao/models/carts.model.js";
 const LocalStrategy = local.Strategy;
 
 const initializePassport = () => {
@@ -21,12 +22,15 @@ const initializePassport = () => {
                     }
                     const { first_name, last_name, age, email } = req.body;
                     const hashedPassword = await bcrypt.hash(password, 10);
+                    const newCart = new cartModel();
+                    newCart.save();
                     const newUser = {
                         first_name,
                         last_name,
                         age,
                         email,
                         password: hashedPassword,
+                        cart: newCart._id,
                     };
                     console.log(newUser);
                     const result = await userModel.create(newUser);
