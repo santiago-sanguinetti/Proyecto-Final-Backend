@@ -87,6 +87,7 @@ const initializePassport = () => {
                         email: profile._json.email,
                     });
                     if (!user) {
+                        const newCart = new cartModel();
                         let newUser = {
                             //En caso que tenga perfil privado, usa el nombre de usuario en lugar del nombre
                             first_name:
@@ -95,6 +96,7 @@ const initializePassport = () => {
                             age: 18,
                             email: profile._json.email,
                             password: "",
+                            cart: newCart._id,
                         };
                         let result = await userModel.create(newUser);
                         done(null, result);
