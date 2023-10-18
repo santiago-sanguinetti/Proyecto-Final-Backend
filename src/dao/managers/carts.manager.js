@@ -8,7 +8,7 @@ export default class Carts {
         return carts.map((cart) => cart.toObject());
     };
 
-    saveCarts = async (cart) => {
+    createCart = async (cart) => {
         try {
             return await cartModel.create(cart);
         } catch (error) {
@@ -16,7 +16,23 @@ export default class Carts {
         }
     };
 
+    saveCart = async (cart) => {
+        try {
+            return await cart.save();
+        } catch (error) {
+            throw error;
+        }
+    };
+
     getBy = async (params) => {
-        return await cartModel.findOne(params).lean();
+        return await cartModel.findOne(params); //lean() para convertirlo en object de js
+    };
+
+    populateProducts = async (cart) => {
+        try {
+            return await cart.populate("products");
+        } catch (error) {
+            throw error;
+        }
     };
 }
