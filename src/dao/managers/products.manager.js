@@ -7,7 +7,13 @@ export default class Products {
         const products = await productModel.find();
         return products.map((products) => products.toObject());
     };
-
+    createProduct = async (product) => {
+        try {
+            return await productModel.create(product);
+        } catch (error) {
+            throw error;
+        }
+    };
     saveProduct = async (product) => {
         try {
             return await productModel.create(product);
@@ -18,5 +24,9 @@ export default class Products {
 
     getBy = async (params) => {
         return await productModel.findOne(params).lean();
+    };
+
+    deleteById = async (id) => {
+        return await productModel.deleteOne({ _id: id });
     };
 }
