@@ -1,8 +1,9 @@
 import { Router } from "express";
-import mongoose from "mongoose";
-import { productModel } from "../dao/models/products.model.js";
-import { cartModel } from "../dao/models/carts.model.js";
 import { getAllProducts } from "../controllers/products.controller.js";
+import {
+    getRealtimeProducts,
+    showCart,
+} from "../controllers/views.controller.js";
 
 const router = Router();
 
@@ -10,32 +11,11 @@ router.get("/", async (req, res) => {
     res.redirect("/products");
 });
 
-router.get("/realtimeproducts", async (req, res) => {
-    try {
-        const products = await productModel.find().lean();
-        res.render("realTimeProducts", { products });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
+router.get("/realtimeproducts", getRealtimeProducts);
 
 router.get("/products", checkAuth, getAllProducts);
 
-router.get("/cart", async (req, res) => {
-    //Por ahora funciona con un solo carrito luego funcionará con :cid
-    const { cid } = req.params;
-
-    try {
-        const cart = await cartModel
-            .findById("650a07c3860aebb9f03b2e69") //cid
-            .populate("products.productId")
-            .lean();
-        // console.log(JSON.stringify(cart, null, 2));
-        res.render("cart", { cart: cart });
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+router.get("/cart", checkAuth, showCart);
 
 //-------------------- Login --------------------
 export function checkAuth(req, res, next) {
