@@ -13,11 +13,12 @@ import chatRouter from "./routes/messages.router.js";
 import sessionRouter from "./routes/sessions.router.js";
 import passport from "passport";
 import initializePassport from "./config/passport.config.js";
+import { dotenvConfig } from "./config/config.js";
 
 const app = express();
 app.use(
     session({
-        secret: "sUmHiS3cuR1tYS3crEtC0d3",
+        secret: dotenvConfig.sessionSecret,
         resave: false,
         saveUninitialized: true,
     })
@@ -29,10 +30,10 @@ app.use(passport.session());
 //Config socket.io
 const server = http.createServer(app);
 const io = new Server(server);
-const PORT = 8080;
+const PORT = dotenvConfig.port;
 
 server.listen(PORT, () => {
-    console.log("El servidor está escuchando en el puerto 8080");
+    console.log(`El servidor está escuchando en el puerto ${PORT}`);
 });
 export const socket = io.on("connection", (socket) => {
     console.log("Un cliente se ha conectado.");
@@ -49,8 +50,7 @@ app.engine("handlebars", exphbs.engine());
 app.set("view engine", "handlebars");
 
 //Config Mongo
-const dbURI =
-    "mongodb+srv://CoderUser:00UIDh6iSAQPHj28@ecommerce.dn98uin.mongodb.net/?retryWrites=true&w=majority";
+const dbURI = `mongodb+srv://${dotenvConfig.dbUser}:${dotenvConfig.dbPassword}@${dotenvConfig.dbHost}?${dotenvConfig.dbParams}`;
 
 mongoose
     .connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })

@@ -1,6 +1,8 @@
+import { dotenvConfig } from "./config.js";
+
 export function isAdmin(email, password) {
-    const adminEmail = "adminCoder@coder.com";
-    const adminPassword = "adminCod3r123";
+    const adminEmail = dotenvConfig.adminEmail;
+    const adminPassword = dotenvConfig.adminPassword;
     //Devuelve un booleano si coinciden los datos
     return email === adminEmail && password === adminPassword;
 }
@@ -9,9 +11,9 @@ export const adminUser = {
     _id: "42",
     first_name: "Admin",
     last_name: "",
-    email: "adminCoder@coder.com",
+    email: dotenvConfig.adminEmail,
     age: 42,
-    password: "adminCod3r123",
+    password: dotenvConfig.adminPassword,
     role: "admin",
     cart: "6509ec5bdc95728198f484f9",
 };

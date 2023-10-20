@@ -5,6 +5,7 @@ import { userModel } from "../dao/models/users.model.js";
 import bcrypt from "bcrypt";
 import { adminUser, isAdmin } from "./admin.config.js";
 import { cartModel } from "../dao/models/carts.model.js";
+import { dotenvConfig } from "./config.js";
 const LocalStrategy = local.Strategy;
 
 const initializePassport = () => {
@@ -75,10 +76,9 @@ const initializePassport = () => {
         "github",
         new GitHubStrategy(
             {
-                clientID: "Iv1.dcfbbf30c8e9e024",
-                clientSecret: "1c855aa3f2fa9dbbe7586cabf084ab2f3fa0a8de",
-                callbackURL:
-                    "http://localhost:8080/api/sessions/githubcallback",
+                clientID: dotenvConfig.githubClientId,
+                clientSecret: dotenvConfig.githubClientSecret,
+                callbackURL: dotenvConfig.githubCallbackUrl,
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {

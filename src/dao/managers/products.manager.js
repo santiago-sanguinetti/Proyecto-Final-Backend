@@ -29,4 +29,18 @@ export default class Products {
     deleteById = async (id) => {
         return await productModel.deleteOne({ _id: id });
     };
+
+    countDocuments = async (queryObject) => {
+        return await productModel.countDocuments(queryObject).exec();
+    };
+
+    limitGetAll = async (limit, page, sort) => {
+        return await productModel
+            .find()
+            .lean()
+            .sort(sort)
+            .limit(limit)
+            .skip((page - 1) * limit)
+            .exec();
+    };
 }

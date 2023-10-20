@@ -3,7 +3,7 @@ import productManager from "../dao/managers/products.manager.js";
 
 const productsManager = new productManager();
 // Mostrar todos los productos
-export const getAllProducts = async (req, res) => {
+export const getAllApiProducts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Si no se proporciona un límite, se establece un valor predeterminado
     const page = Number(req.query.page) || 1;
     const sort = req.query.sort;
@@ -13,16 +13,13 @@ export const getAllProducts = async (req, res) => {
     const queryObject = buildQueryObject(query);
 
     try {
-        const products = await productsManager
-            .getAll()
-            .sort(sortObject)
-            .limit(limit)
-            .skip((page - 1) * limit)
-            .exec();
+        const products = await productsManager.limitGetAll(
+            limit,
+            page,
+            sortObject
+        );
 
-        const totalProducts = await productsManager
-            .countDocuments(queryObject)
-            .exec();
+        const totalProducts = await productsManager.countDocuments(queryObject);
         const prevPage = page > 1 ? page - 1 : null;
         const nextPage = page < totalPages ? page + 1 : null;
 
@@ -40,6 +37,38 @@ export const getAllProducts = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+export const getAllProducts = async (req, res) => {
+    const limit = Number(req.query.limit) || 10;
+    const page = Number(req.query.page) || 1;
+
+    try {
+        const products = await productsManager.limitGetAll(limit, page);
+
+        const totalProducts = await productsManager.countDocuments();
+        const totalPages = Math.ceil(totalProducts / limit);
+        const prevPage = page > 1 ? page - 1 : null;
+        const nextPage = page < totalPages ? page + 1 : null;
+        res.render("products", {
+            user: req.session.user,
+            products: products,
+            totalPages: totalPages,
+            prevPage: prevPage,
+            nextPage: nextPage,
+            page: page,
+            hasPrevPage: prevPage !== null,
+            hasNextPage: nextPage !== null,
+            prevLink: prevPage
+                ? `/productos?page=${prevPage}&limit=${limit}`
+                : null,
+            nextLink: nextPage
+                ? `/productos?page=${nextPage}&limit=${limit}`
+                : null,
+        });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
 // Buscar un producto por id
 export const getProductById = async (req, res) => {
     try {

@@ -1,7 +1,7 @@
 import express from "express";
 import { checkAuth, checkNotAuth } from "./views.router.js";
 import passport from "passport";
-import { adminUser } from "../config/admin.config.js";
+import { validateLogin } from "../controllers/sessions.controller.js";
 
 const router = express.Router();
 
@@ -20,23 +20,7 @@ router.post(
     passport.authenticate("login", {
         failureRedirect: "/login",
     }),
-    async (req, res) => {
-        if (!req.user)
-            return res
-                .status(400)
-                .send({ status: "error", error: "Invalid credentials" });
-        req.user.email === adminUser.email
-            ? (req.session.user = adminUser)
-            : (req.session.user = {
-                  first_name: req.user.first_name,
-                  last_name: req.user.last_name,
-                  age: req.user.age,
-                  email: req.user.email,
-                  role: req.user.role,
-                  cart: req.user.cart,
-              });
-        res.redirect("/profile");
-    }
+    validateLogin
 );
 
 router.post("/logout", checkAuth, (req, res) => {
