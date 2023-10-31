@@ -8,13 +8,14 @@ import {
     updateCartFromArray,
     updateCartProductQuantity,
 } from "../controllers/carts.controller.js";
+import { isAuthenticated, isUser } from "../auth/middlewares.js";
 
 const router = express.Router();
 
 //Crear un carrito
 router.post("/", createCart);
 //Agregar un producto al carrito seleccionado
-router.post("/:cid/product/:pid", addProductToCart);
+router.post("/:cid/product/:pid", isAuthenticated, isUser, addProductToCart);
 
 //Obtener un carrito por su id
 router.get("/:cid", getCartById);

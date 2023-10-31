@@ -4,6 +4,7 @@ import {
     getRealtimeProducts,
     showCart,
 } from "../controllers/views.controller.js";
+import { isAuthenticated, isNotLoggedIn } from "../auth/middlewares.js";
 
 const router = Router();
 
@@ -13,9 +14,9 @@ router.get("/", async (req, res) => {
 
 router.get("/realtimeproducts", getRealtimeProducts);
 
-router.get("/products", checkAuth, getAllProducts);
+router.get("/products", isAuthenticated, getAllProducts);
 
-router.get("/cart", checkAuth, showCart);
+router.get("/cart", isAuthenticated, showCart);
 
 //-------------------- Login --------------------
 export function checkAuth(req, res, next) {
@@ -34,19 +35,19 @@ export function checkNotAuth(req, res, next) {
     }
 }
 
-router.get("/login", checkNotAuth, (req, res) => {
+router.get("/login", (req, res) => {
     res.render("login");
 });
 
-router.get("/register", checkNotAuth, (req, res) => {
+router.get("/register", (req, res) => {
     res.render("register");
 });
 
-router.get("/profile", checkAuth, (req, res) => {
+router.get("/profile", isAuthenticated, (req, res) => {
     res.render("profile", { user: req.session.user });
 });
 
-router.post("/logout", checkAuth, (req, res) => {
+router.post("/logout", isAuthenticated, (req, res) => {
     req.session.destroy();
     res.redirect("/login");
 });

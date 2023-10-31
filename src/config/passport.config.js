@@ -6,7 +6,21 @@ import bcrypt from "bcrypt";
 import { adminUser, isAdmin } from "./admin.config.js";
 import { cartModel } from "../dao/models/carts.model.js";
 import { dotenvConfig } from "./config.js";
+import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
+import Users from "../dao/managers/users.manager.js";
 const LocalStrategy = local.Strategy;
+const sessionsManager = new Users();
+
+const opts = {};
+opts.jwtFromRequest = (req) => {
+    let token = null;
+
+    if (req && req.cookies) {
+        token = req.cookies["token"];
+    }
+    return token;
+};
+opts.secretOrKey = "top_secret";
 
 const initializePassport = () => {
     passport.use(
@@ -108,6 +122,30 @@ const initializePassport = () => {
                 }
             }
         )
+    );
+
+    passport.use(
+        new JwtStrategy(opts, async (jwt_payload, done) => {
+            try {
+                if (jwt_payload.user.email === dotenvConfig.adminEmail) {
+                    // Si es así, crea un objeto de usuario administrador
+                    const adminUser = { username: "admin", role: "admin" };
+                    return done(null, adminUser);
+                }
+
+                const user = await userModel.findOne({
+                    _id: jwt_payload.user._id,
+                });
+
+                if (user) {
+                    return done(null, user);
+                } else {
+                    return done(null, false);
+                }
+            } catch (err) {
+                return done(err, false);
+            }
+        })
     );
 
     passport.serializeUser((user, done) => {

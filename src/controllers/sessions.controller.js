@@ -1,8 +1,6 @@
-import Users from "../dao/managers/users.manager.js";
 import { adminUser } from "../config/admin.config.js";
 
-const sessionsManager = new Users();
-
+// --------------Deprecado--------------
 export const validateLogin = async (req, res) => {
     if (!req.user)
         return res

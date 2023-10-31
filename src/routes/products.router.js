@@ -6,6 +6,7 @@ import {
     getProductById,
     updateProduct,
 } from "../controllers/products.controller.js";
+import { isAdmin, isAuthenticated } from "../auth/middlewares.js";
 
 const router = express.Router();
 
@@ -16,8 +17,8 @@ router.get("/:pid", getProductById);
 //Crear un producto
 router.post("/", createProduct);
 //Actualizar un producto
-router.put("/:pid", updateProduct);
+router.put("/:pid", isAuthenticated, isAdmin, updateProduct);
 //Eliminar un producto
-router.delete("/:pid", deleteProductById);
+router.delete("/:pid", isAuthenticated, isAdmin, deleteProductById);
 
 export default router;
