@@ -141,21 +141,29 @@ export const clearCart = async (req, res) => {
     }
 };
 
+//Completar compra y generar ticket
 export const completePurchase = async (req, res) => {
     try {
+        // Obtiene el id del carrito de la solicitud
         const cartId = req.params.cid;
+        // Busca el carrito en la base de datos
         const cart = await cartsManager.getBy({ _id: cartId });
+        // Inicializa el total de la compra y el array de productos sin stock
         let totalAmount = 0;
         let outOfStockProducts = [];
 
+        // Si el carrito está vacío, devuelve un error
         if (!cart || cart.products[0] === null)
-            //En algún momento se me insertaba un null pero ya debería estar resuelto
             return res.status(400).json({ error: "El carrito está vacío" });
 
+        // Itera sobre los productos en el carrito
         for (let product of cart.products) {
+            // Busca el producto en la base de datos
             const dbProduct = await productsManager.getBy({
                 _id: product.productId,
             });
+
+            // Si hay suficiente stock del producto, actualiza el stock y suma el precio al total
             if (await checkStock(dbProduct, product.quantity)) {
                 await productsManager.updateProductStock(
                     dbProduct,
@@ -163,23 +171,29 @@ export const completePurchase = async (req, res) => {
                 );
                 totalAmount += dbProduct.price * product.quantity;
             } else {
+                // Si no hay suficiente stock, agrega el producto al array de productos sin stock
                 outOfStockProducts.push(product);
             }
         }
+
+        // Si hay productos sin stock, actualiza el carrito para que solo contenga estos productos y devuelve un error
         if (outOfStockProducts.length > 0) {
-            cart.products = outOfStockProducts; // Actualiza el carrito con los productos que no se pudieron comprar
+            cart.products = outOfStockProducts;
             await cartsManager.updateCart(cart);
             return res.status(400).json({
                 error: "No hay suficiente stock para los siguientes productos: ",
                 products: outOfStockProducts.map((item) => item.productId),
             });
         }
+
+        // Crea los detalles de la compra
         const purchaseDetails = {
             code: generateCode(),
             amount: totalAmount,
             purchaser: req.user.email,
         };
 
+        // Crea un ticket para la compra
         ticketsManager.createPurchaseTicket(purchaseDetails);
 
         res.status(200).json({ message: "Compra finalizada con éxito" });

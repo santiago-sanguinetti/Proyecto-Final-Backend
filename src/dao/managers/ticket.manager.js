@@ -27,7 +27,7 @@ export default class Tickets {
     createPurchaseTicket = async (purchaseDetails) => {
         try {
             const ticket = {
-                code: purchaseDetails.code, // Asume que tienes una función para generar un código único
+                code: purchaseDetails.code,
                 purchase_datetime: new Date(),
                 amount: purchaseDetails.amount,
                 purchaser: purchaseDetails.purchaser,

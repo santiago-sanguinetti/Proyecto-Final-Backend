@@ -1,20 +1,13 @@
 import express from "express";
-import { checkAuth, checkNotAuth } from "./views.router.js";
 import passport from "passport";
-import { validateLogin } from "../controllers/sessions.controller.js";
-import jwt from "jsonwebtoken";
-import UserDTO from "../dao/DTOs/user.dto.js";
 import {
     isAuthenticated,
     isAdmin,
     isUser,
-    isTokenValid,
-    isNotLoggedIn,
+    authenticate,
 } from "../auth/middlewares.js";
-import { dotenvConfig } from "../config/config.js";
 
 const router = express.Router();
-const tokenSecret = dotenvConfig.tokenSecret;
 
 router.post(
     "/register",
@@ -25,32 +18,7 @@ router.post(
     })
 );
 
-router.post("/login", async (req, res, next) => {
-    passport.authenticate("login", async (err, user, info) => {
-        try {
-            if (err || !user) {
-                const error = new Error("new error");
-                return next(error);
-            }
-
-            req.login(user, { session: false }, async (err) => {
-                if (err) return next(err);
-
-                const body = await new UserDTO(user);
-
-                const token = await jwt.sign({ user: body }, tokenSecret, {
-                    expiresIn: "1h",
-                });
-
-                res.cookie("token", token);
-
-                res.redirect("/profile");
-            });
-        } catch (e) {
-            return next(e);
-        }
-    })(req, res, next);
-});
+router.post("/login", authenticate);
 
 router.post("/logout", isAuthenticated, (req, res) => {
     console.log(res);
