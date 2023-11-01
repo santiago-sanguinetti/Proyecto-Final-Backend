@@ -2,6 +2,7 @@ import express from "express";
 import {
     addProductToCart,
     clearCart,
+    completePurchase,
     createCart,
     deleteProductFromCart,
     getCartById,
@@ -16,6 +17,8 @@ const router = express.Router();
 router.post("/", createCart);
 //Agregar un producto al carrito seleccionado
 router.post("/:cid/product/:pid", isAuthenticated, isUser, addProductToCart);
+//Finalizar la compra
+router.post("/:cid/purchase", isAuthenticated, completePurchase);
 
 //Obtener un carrito por su id
 router.get("/:cid", getCartById);

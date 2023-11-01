@@ -1,6 +1,10 @@
 import Carts from "../dao/managers/carts.manager.js";
-
+import Products from "../dao/managers/products.manager.js";
+import Tickets from "../dao/managers/ticket.manager.js";
+import { generateCode } from "../utils.js";
 const cartsManager = new Carts();
+const productsManager = new Products();
+const ticketsManager = new Tickets();
 
 //Crear un carrito
 export const createCart = async (req, res) => {
@@ -135,4 +139,55 @@ export const clearCart = async (req, res) => {
     } catch (err) {
         res.json({ status: "error", message: err.message });
     }
+};
+
+export const completePurchase = async (req, res) => {
+    try {
+        const cartId = req.params.cid;
+        const cart = await cartsManager.getBy({ _id: cartId });
+        let totalAmount = 0;
+        let outOfStockProducts = [];
+
+        if (!cart || cart.products[0] === null)
+            //En algún momento se me insertaba un null pero ya debería estar resuelto
+            return res.status(400).json({ error: "El carrito está vacío" });
+
+        for (let product of cart.products) {
+            const dbProduct = await productsManager.getBy({
+                _id: product.productId,
+            });
+            if (await checkStock(dbProduct, product.quantity)) {
+                await productsManager.updateProductStock(
+                    dbProduct,
+                    product.quantity
+                );
+                totalAmount += dbProduct.price * product.quantity;
+            } else {
+                outOfStockProducts.push(product);
+            }
+        }
+        if (outOfStockProducts.length > 0) {
+            cart.products = outOfStockProducts; // Actualiza el carrito con los productos que no se pudieron comprar
+            await cartsManager.updateCart(cart);
+            return res.status(400).json({
+                error: "No hay suficiente stock para los siguientes productos: ",
+                products: outOfStockProducts.map((item) => item.productId),
+            });
+        }
+        const purchaseDetails = {
+            code: generateCode(),
+            amount: totalAmount,
+            purchaser: req.user.email,
+        };
+
+        ticketsManager.createPurchaseTicket(purchaseDetails);
+
+        res.status(200).json({ message: "Compra finalizada con éxito" });
+    } catch (error) {
+        res.status(500).json({ error: "Hubo un error al procesar la compra" });
+    }
+};
+
+const checkStock = async (product, productQuantity) => {
+    return product.stock >= productQuantity;
 };

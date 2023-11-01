@@ -43,4 +43,20 @@ export default class Products {
             .skip((page - 1) * limit)
             .exec();
     };
+
+    updateProductStock = async (product, quantity) => {
+        try {
+            console.log(product, quantity);
+            product.stock -= quantity;
+
+            const updatedProduct = await productModel.findByIdAndUpdate(
+                product._id,
+                product,
+                { new: true }
+            );
+            return updatedProduct;
+        } catch (error) {
+            throw error;
+        }
+    };
 }

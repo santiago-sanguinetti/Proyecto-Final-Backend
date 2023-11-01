@@ -35,4 +35,17 @@ export default class Carts {
             throw error;
         }
     };
+
+    updateCart = async (cart) => {
+        try {
+            const updatedCart = await cartModel.findByIdAndUpdate(
+                cart._id,
+                cart,
+                { new: true }
+            );
+            return updatedCart;
+        } catch (error) {
+            throw error;
+        }
+    };
 }

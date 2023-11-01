@@ -23,4 +23,20 @@ export default class Tickets {
     deleteById = async (id) => {
         return await ticketModel.deleteOne({ _id: id });
     };
+
+    createPurchaseTicket = async (purchaseDetails) => {
+        try {
+            const ticket = {
+                code: purchaseDetails.code, // Asume que tienes una función para generar un código único
+                purchase_datetime: new Date(),
+                amount: purchaseDetails.amount,
+                purchaser: purchaseDetails.purchaser,
+            };
+
+            const newTicket = await this.createTicket(ticket);
+            return newTicket;
+        } catch (error) {
+            throw error;
+        }
+    };
 }
