@@ -1,12 +1,15 @@
 # Backend-ProyectoFinal
-### Actualización 07/11/2023
-## Nuevas funcionalidades 
+### Actualización 08/11/2023
+## Nuevas funcionalidades de esta entrega
 
 El proyecto ahora incluye las siguientes funcionalidades:
 
-- Manejo de errores personalizado
-- Endpoint ```/mockingproducts```
-  - Genera 100 productos como si fueran una respuesta de MongoDB
+- Todavía no se ha implementado ninguna funcionalidad
+
+## Correcciones y cambios menores
+
+- Ahora se contemplan más cantidad de errores
+- Ahora se incluye un código HTTP en el estado de los errores
 
 ## Uso
 
