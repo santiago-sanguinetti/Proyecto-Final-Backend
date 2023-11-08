@@ -7,7 +7,6 @@ export default (error, req, res, next) => {
                 status: "error",
                 error: error.name,
                 message: error.message,
-                cause: error.cause,
             });
             break;
         case EErrors.DATABASE_ERROR:
@@ -15,7 +14,6 @@ export default (error, req, res, next) => {
                 status: "error",
                 error: error.name,
                 message: error.message,
-                cause: error.cause,
             });
             break;
         default:

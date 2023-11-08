@@ -154,52 +154,61 @@ export const getProductById = async (req, res, next) => {
 };
 // Crear un producto
 export const createProduct = async (req, res, next) => {
-    const product = {
-        title: req.body.title,
-        description: req.body.description,
-        code: req.body.code,
-        price: req.body.price,
-        status: req.body.status ?? true,
-        stock: req.body.stock,
-        category: req.body.category,
-        thumbnails: req.body.thumbnails ?? [],
-    };
+    try {
+        const product = {
+            title: req.body.title,
+            description: req.body.description,
+            code: req.body.code,
+            price: req.body.price,
+            status: req.body.status ?? true,
+            stock: req.body.stock,
+            category: req.body.category,
+            thumbnails: req.body.thumbnails ?? [],
+        };
 
-    const existingProduct = await productsManager.getBy({ code: product.code });
-    if (existingProduct) {
-        const error = CustomError.createError({
-            name: "Producto ya existe",
-            cause: alreadyExistsInDB("producto"),
-            message: "El código del producto ya está en uso",
-            code: EErrors.DATABASE_ERROR,
+        const existingProduct = await productsManager.getBy({
+            code: product.code,
         });
-        return next(error);
-    } else {
-        const errorCause = validateProduct(product);
-        console.log(errorCause);
-        if (errorCause) {
+        if (existingProduct) {
             const error = CustomError.createError({
-                name: "Producto inválido",
-                cause: errorCause,
-                message: "Los parámetros son inválidos",
-                code: EErrors.INVALID_TYPES_ERROR,
+                name: "Producto ya existe",
+                cause: alreadyExistsInDB("producto"),
+                message: "El código del producto ya está en uso",
+                code: EErrors.DATABASE_ERROR,
             });
             return next(error);
+        } else {
+            const errorCause = validateProduct(product);
+            console.log(errorCause);
+            if (errorCause) {
+                const error = CustomError.createError({
+                    name: "Producto inválido",
+                    cause: errorCause,
+                    message: "Los parámetros son inválidos",
+                    code: EErrors.INVALID_TYPES_ERROR,
+                });
+                return next(error);
+            }
+            const createProduct = await productsManager.createProduct(product);
+
+            try {
+                const newProduct = await productsManager.saveProduct(
+                    createProduct
+                );
+
+                //Emite un evento "product-created" cada vez que se crea un producto
+                socket.emit("product-created", newProduct);
+
+                res.status(201).json(newProduct);
+            } catch (err) {
+                return next(err);
+            }
         }
-        const createProduct = await productsManager.createProduct(product);
-
-        try {
-            const newProduct = await productsManager.saveProduct(createProduct);
-
-            //Emite un evento "product-created" cada vez que se crea un producto
-            socket.emit("product-created", newProduct);
-
-            res.status(201).json(newProduct);
-        } catch (err) {
-            return next(err);
-        }
+    } catch (err) {
+        return next(err);
     }
 };
+
 // Actualizar un producto
 export const updateProduct = async (req, res, next) => {
     try {
