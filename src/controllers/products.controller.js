@@ -1,13 +1,41 @@
 import { socket } from "../app.js";
+import mongoose from "mongoose";
 import productManager from "../dao/managers/products.manager.js";
+import CustomError from "../services/errors/CustomError.js";
+import EErrors from "../services/errors/enums.js";
+import {
+    notFoundInDB,
+    alreadyExistsInDB,
+    createProductErrorInfo,
+    getAllProductsErrorInfo,
+    getProductByIdErrorInfo,
+} from "../services/errors/info.js";
 
 const productsManager = new productManager();
 // Mostrar todos los productos
-export const getAllApiProducts = async (req, res) => {
+export const getAllApiProducts = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10; // Si no se proporciona un límite, se establece un valor predeterminado
     const page = Number(req.query.page) || 1;
     const sort = req.query.sort;
     const query = req.query.query;
+
+    if (
+        // Valida los parámetros que podrían generar un error
+        isNaN(limit) ||
+        limit < 0 ||
+        isNaN(page) ||
+        page < 0 ||
+        typeof sort !== "string" ||
+        (sort !== "asc" && sort !== "desc")
+    ) {
+        const error = CustomError.createError({
+            name: "Parámetros inválidos",
+            cause: getAllProductsErrorInfo({ limit, page, sort, query }),
+            message: "Error tratando de obtener los productos",
+            code: EErrors.INVALID_TYPES_ERROR,
+        });
+        return next(error);
+    }
 
     const sortObject = buildSortObject(sort);
     const queryObject = buildQueryObject(query);
@@ -34,12 +62,33 @@ export const getAllApiProducts = async (req, res) => {
 
         res.json(responseObject);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return next(err);
     }
 };
-export const getAllProducts = async (req, res) => {
+export const getAllProducts = async (req, res, next) => {
     const limit = Number(req.query.limit) || 10;
     const page = Number(req.query.page) || 1;
+
+    if (
+        // Valida los parámetros que podrían generar un error
+        isNaN(limit) ||
+        limit < 0 ||
+        isNaN(page) ||
+        page < 0
+    ) {
+        const error = CustomError.createError({
+            name: "Parámetros inválidos",
+            cause: getAllProductsErrorInfo({
+                limit,
+                page,
+                sort: "N/A",
+                query: "N/A",
+            }),
+            message: "Error tratando de obtener los productos",
+            code: EErrors.INVALID_TYPES_ERROR,
+        });
+        return next(error);
+    }
 
     try {
         const products = await productsManager.limitGetAll(limit, page);
@@ -65,29 +114,47 @@ export const getAllProducts = async (req, res) => {
                 : null,
         });
     } catch (err) {
-        res.status(500).send(err.message);
+        return next(err);
     }
 };
 
 // Buscar un producto por id
-export const getProductById = async (req, res) => {
+export const getProductById = async (req, res, next) => {
     try {
         const products = new Array();
-        const product = await productsManager.getBy({ _id: req.params.pid });
-        products.push(product);
-        if (product == null) {
-            return res
-                .status(404)
-                .json({ message: "No se pudo encontrar el producto" });
+        const id = req.params.pid;
+
+        if (!isValidObjectId(id)) {
+            const error = CustomError.createError({
+                name: "Parámetros inválidos",
+                cause: getProductByIdErrorInfo(id),
+                message: "Error tratando de obtener el producto",
+                code: EErrors.INVALID_TYPES_ERROR,
+            });
+            return next(error);
         }
+
+        const product = await productsManager.getBy({ _id: id });
+        products.push(product);
+
+        if (product == null) {
+            const error = CustomError.createError({
+                name: "La base de datos devolvió null",
+                cause: getProductByIdErrorInfo(),
+                message: "Error tratando de obtener el producto",
+                code: EErrors.DATABASE_ERROR,
+            });
+            return next(error);
+        }
+
         res.render("home", { products });
     } catch (err) {
-        return res.status(500).json({ message: err.message });
+        return next(err);
     }
 };
 // Crear un producto
-export const createProduct = async (req, res) => {
-    const product = await productsManager.createProduct({
+export const createProduct = async (req, res, next) => {
+    const product = {
         title: req.body.title,
         description: req.body.description,
         code: req.body.code,
@@ -96,27 +163,55 @@ export const createProduct = async (req, res) => {
         stock: req.body.stock,
         category: req.body.category,
         thumbnails: req.body.thumbnails ?? [],
-    });
+    };
 
-    try {
-        const newProduct = await productsManager.saveProduct(product);
+    const existingProduct = await productsManager.getBy({ code: product.code });
+    if (existingProduct) {
+        const error = CustomError.createError({
+            name: "Producto ya existe",
+            cause: alreadyExistsInDB("producto"),
+            message: "El código del producto ya está en uso",
+            code: EErrors.DATABASE_ERROR,
+        });
+        return next(error);
+    } else {
+        const errorCause = validateProduct(product);
+        console.log(errorCause);
+        if (errorCause) {
+            const error = CustomError.createError({
+                name: "Producto inválido",
+                cause: errorCause,
+                message: "Los parámetros son inválidos",
+                code: EErrors.INVALID_TYPES_ERROR,
+            });
+            return next(error);
+        }
+        const createProduct = await productsManager.createProduct(product);
 
-        //Emite un evento "product-created" cada vez que se crea un producto
-        socket.emit("product-created", newProduct);
+        try {
+            const newProduct = await productsManager.saveProduct(createProduct);
 
-        res.status(201).json(newProduct);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
+            //Emite un evento "product-created" cada vez que se crea un producto
+            socket.emit("product-created", newProduct);
+
+            res.status(201).json(newProduct);
+        } catch (err) {
+            return next(err);
+        }
     }
 };
 // Actualizar un producto
-export const updateProduct = async (req, res) => {
+export const updateProduct = async (req, res, next) => {
     try {
         const product = await productsManager.getBy({ _id: req.params.pid });
         if (product == null) {
-            return res
-                .status(404)
-                .json({ message: "No se pudo encontrar el producto" });
+            const error = CustomError.createError({
+                name: "Producto no encontrado",
+                cause: notFoundInDB("producto"),
+                message: "No se pudo encontrar el producto",
+                code: EErrors.DATABASE_ERROR,
+            });
+            return next(error);
         }
 
         // Define los campos que pueden ser actualizados
@@ -138,10 +233,21 @@ export const updateProduct = async (req, res) => {
             }
         });
 
+        const errorCause = validateProduct(product);
+        if (errorCause) {
+            const error = CustomError.createError({
+                name: "Producto inválido",
+                cause: errorCause,
+                message: "Los parámetros son inválidos",
+                code: EErrors.INVALID_TYPES_ERROR,
+            });
+            return next(error);
+        }
+
         const updatedProduct = await productsManager.saveProduct(product);
         res.json(updatedProduct);
     } catch (err) {
-        return res.status(500).json({ message: err.message });
+        return next(err);
     }
 };
 // Eliminar un producto
@@ -149,9 +255,13 @@ export const deleteProductById = async (req, res) => {
     try {
         const product = await productsManager.getBy({ _id: req.params.pid });
         if (product == null) {
-            return res
-                .status(404)
-                .json({ message: "No se pudo encontrar el producto" });
+            const error = CustomError.createError({
+                name: "Producto no encontrado",
+                cause: notFoundInDB("producto"),
+                message: "No se pudo encontrar el producto",
+                code: EErrors.DATABASE_ERROR,
+            });
+            return next(error);
         }
 
         await productsManager.deleteById(req.params.id);
@@ -161,7 +271,7 @@ export const deleteProductById = async (req, res) => {
 
         res.json({ message: "Producto eliminado" });
     } catch (err) {
-        return res.status(500).json({ message: err.message });
+        return next(err);
     }
 };
 
@@ -213,4 +323,49 @@ const buildResponseObject = (
             ? `/productos?page=${nextPage}&limit=${limit}`
             : null,
     };
+};
+
+// Función auxiliar para validar los datos de un producto
+export const validateProduct = (product) => {
+    const expectedTypes = {
+        title: "string",
+        description: "string",
+        code: "string",
+        price: "number",
+        status: "boolean",
+        stock: "number",
+        category: "string",
+        thumbnails: "array",
+    };
+
+    const requiredFields = [
+        "title",
+        "description",
+        "code",
+        "price",
+        "category",
+    ];
+
+    for (const [key, type] of Object.entries(expectedTypes)) {
+        if (
+            type === "array"
+                ? !Array.isArray(product[key])
+                : typeof product[key] !== type
+        ) {
+            return createProductErrorInfo(product);
+        }
+    }
+
+    for (const field of requiredFields) {
+        if (!product[field]) {
+            return createProductErrorInfo(product);
+        }
+    }
+    // Si todos los campos son válidos, devuelve null
+    return null;
+};
+
+// Función auxiliar para validar si un id de mongo es válido
+export const isValidObjectId = (id) => {
+    return mongoose.Types.ObjectId.isValid(id);
 };

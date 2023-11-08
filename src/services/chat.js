@@ -1,4 +1,4 @@
-import { socket } from "../../app.js";
+import { socket } from "../app.js";
 
 // Escuchar el evento 'message'
 socket.on("message", (message) => {

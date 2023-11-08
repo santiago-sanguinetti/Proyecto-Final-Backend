@@ -2,12 +2,15 @@ import Carts from "../dao/managers/carts.manager.js";
 import Products from "../dao/managers/products.manager.js";
 import Tickets from "../dao/managers/ticket.manager.js";
 import { generateCode } from "../utils.js";
+import EErrors from "../services/errors/enums.js";
+import CustomError from "../services/errors/CustomError.js";
+import { notFoundInDB } from "../services/errors/info.js";
 const cartsManager = new Carts();
 const productsManager = new Products();
 const ticketsManager = new Tickets();
 
 //Crear un carrito
-export const createCart = async (req, res) => {
+export const createCart = async (req, res, next) => {
     const cart = {
         products: req.body.products,
     };
@@ -16,18 +19,21 @@ export const createCart = async (req, res) => {
         const newCart = await cartsManager.createCart(cart);
         res.status(201).json(newCart);
     } catch (err) {
-        res.status(400).json({ message: err.message });
+        return next(err);
     }
 };
-
 //Agregar un producto al carrito seleccionado
-export const addProductToCart = async (req, res) => {
+export const addProductToCart = async (req, res, next) => {
     try {
         const cart = await cartsManager.getBy({ _id: req.params.cid });
         if (cart == null) {
-            return res
-                .status(404)
-                .json({ message: "No se pudo encontrar el carrito" });
+            const error = CustomError.createError({
+                name: "Carrito no encontrado",
+                cause: notFoundInDB("carrito"),
+                message: "No se pudo encontrar el carrito",
+                code: EErrors.DATABASE_ERROR,
+            });
+            return next(error);
         }
 
         const productIndex = cart.products.findIndex(
@@ -44,33 +50,46 @@ export const addProductToCart = async (req, res) => {
         const updatedCart = await cartsManager.saveCart(cart);
         res.json(updatedCart);
     } catch (err) {
-        return res.status(500).json({ message: err.message });
+        return next(err);
     }
 };
 
 //Obtener un carrito por su id
-export const getCartById = async (req, res) => {
+export const getCartById = async (req, res, next) => {
     const { cid } = req.params;
     try {
         // const cart = await cartModel.findById(cid).populate("products");
         const cart = await cartsManager.getBy({ _id: cid });
         if (cart == null) {
-            return res
-                .status(404)
-                .json({ message: "No se pudo encontrar el carrito" });
+            const error = CustomError.createError({
+                name: "Carrito no encontrado",
+                cause: notFoundInDB("carrito"),
+                message: "No se pudo encontrar el carrito",
+                code: EErrors.DATABASE_ERROR,
+            });
+            return next(error);
         }
         const populatedCart = await cartsManager.populateProducts(cart);
         res.json({ populatedCart });
     } catch (err) {
-        res.json({ status: "error", message: err.message });
+        return next(err);
     }
 };
 
 //Eliminar del carrito un producto
-export const deleteProductFromCart = async (req, res) => {
+export const deleteProductFromCart = async (req, res, next) => {
     const { cid, pid } = req.params;
     try {
         const cart = await cartsManager.getBy({ _id: cid });
+        if (cart == null) {
+            const error = CustomError.createError({
+                name: "Carrito no encontrado",
+                cause: notFoundInDB("carrito"),
+                message: "No se pudo encontrar el carrito",
+                code: EErrors.DATABASE_ERROR,
+            });
+            return next(error);
+        }
         cart.products = cart.products.filter(
             (product) => product._id.toString() !== pid
         );
@@ -80,12 +99,12 @@ export const deleteProductFromCart = async (req, res) => {
             message: "Producto eliminado del carrito",
         });
     } catch (err) {
-        res.json({ status: "error", message: err.message });
+        return next(err);
     }
 };
 
 //Actualizar el carrito con array de productos
-export const updateCartFromArray = async (req, res) => {
+export const updateCartFromArray = async (req, res, next) => {
     const { cid } = req.params;
     const products = req.body.products;
     try {
@@ -94,12 +113,12 @@ export const updateCartFromArray = async (req, res) => {
         await cartsManager.saveCart(cart);
         res.json({ status: "success", message: "Carrito actualizado" });
     } catch (err) {
-        res.json({ status: "error", message: err.message });
+        return next(err);
     }
 };
 
 //Actualizar la cantidad de un producto en el carrito
-export const updateCartProductQuantity = async (req, res) => {
+export const updateCartProductQuantity = async (req, res, next) => {
     const { cid, pid } = req.params;
     const quantity = req.body.quantity;
     try {
@@ -121,12 +140,12 @@ export const updateCartProductQuantity = async (req, res) => {
             });
         }
     } catch (err) {
-        res.json({ status: "error", message: err.message });
+        return next(err);
     }
 };
 
 //Eliminar todos los productos del carrito
-export const clearCart = async (req, res) => {
+export const clearCart = async (req, res, next) => {
     const { cid } = req.params;
     try {
         const cart = await cartsManager.getBy({ _id: cid });
@@ -137,12 +156,12 @@ export const clearCart = async (req, res) => {
             message: "Todos los productos eliminados del carrito",
         });
     } catch (err) {
-        res.json({ status: "error", message: err.message });
+        return next(err);
     }
 };
 
 //Completar compra y generar ticket
-export const completePurchase = async (req, res) => {
+export const completePurchase = async (req, res, next) => {
     try {
         // Obtiene el id del carrito de la solicitud
         const cartId = req.params.cid;
@@ -198,7 +217,7 @@ export const completePurchase = async (req, res) => {
 
         res.status(200).json({ message: "Compra finalizada con éxito" });
     } catch (error) {
-        res.status(500).json({ error: "Hubo un error al procesar la compra" });
+        return next(err);
     }
 };
 

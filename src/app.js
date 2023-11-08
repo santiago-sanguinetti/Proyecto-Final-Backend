@@ -16,6 +16,9 @@ import initializePassport from "./config/passport.config.js";
 import { dotenvConfig } from "./config/config.js";
 import { isAuthenticated, isAdmin, isUser } from "./auth/middlewares.js";
 import cookieParser from "cookie-parser";
+import mockingRouter from "./routes/mocking.router.js";
+import compression from "express-compression";
+import errorHandler from "./services/errors/middlewares.js";
 
 const app = express();
 app.use(cookieParser());
@@ -26,6 +29,8 @@ app.use(
         saveUninitialized: true,
     })
 );
+
+app.use(compression());
 
 initializePassport();
 app.use(passport.initialize());
@@ -63,6 +68,7 @@ mongoose
 
 //Config rutas
 app.use("/", viewsRouter);
+app.use("/mockingproducts", mockingRouter);
 app.use("/api/products", productRouter);
 app.use("/api/carts", cartRouter);
 app.use("/api/chat", isAuthenticated, isUser, chatRouter);
@@ -78,3 +84,5 @@ app.get("/admin", isAuthenticated, isAdmin, (req, res) => {
 app.get("/user", isAuthenticated, isUser, (req, res) => {
     res.json({ msg: "OK - Ruta solo para usuarios" });
 });
+
+app.use(errorHandler); // Debería ir siempre al final
