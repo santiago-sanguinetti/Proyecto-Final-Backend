@@ -34,3 +34,11 @@ export const alreadyExistsInDB = (subject) => {
 export const notFoundInDB = (subject) => {
     return `El ${subject} no existe en la base de datos`;
 };
+
+export const emptyCart = (products) => {
+    return `Se espera recibir un array con objetos, se recibió ${products}`;
+};
+
+export const insufficientStock = (outOfStockProducts) => {
+    return `No hay suficiente stock para los siguientes productos: ${outOfStockProducts}`;
+};

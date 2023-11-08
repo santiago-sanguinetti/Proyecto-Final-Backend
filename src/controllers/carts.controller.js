@@ -4,7 +4,12 @@ import Tickets from "../dao/managers/ticket.manager.js";
 import { generateCode } from "../utils.js";
 import EErrors from "../services/errors/enums.js";
 import CustomError from "../services/errors/CustomError.js";
-import { notFoundInDB } from "../services/errors/info.js";
+import {
+    notFoundInDB,
+    emptyCart,
+    insufficientStock,
+} from "../services/errors/info.js";
+import mongoose from "mongoose";
 const cartsManager = new Carts();
 const productsManager = new Products();
 const ticketsManager = new Tickets();
@@ -17,6 +22,18 @@ export const createCart = async (req, res, next) => {
 
     try {
         const newCart = await cartsManager.createCart(cart);
+
+        const errorCause = validateCart(cart);
+        if (errorCause) {
+            const error = CustomError.createError({
+                name: "Carrito inválido",
+                cause: errorCause,
+                message: "Los parámetros son inválidos",
+                code: EErrors.INVALID_TYPES_ERROR,
+            });
+            return next(error);
+        }
+
         res.status(201).json(newCart);
     } catch (err) {
         return next(err);
@@ -109,7 +126,29 @@ export const updateCartFromArray = async (req, res, next) => {
     const products = req.body.products;
     try {
         const cart = await cartsManager.getBy({ _id: cid });
+        if (cart == null) {
+            const error = CustomError.createError({
+                name: "Carrito no encontrado",
+                cause: notFoundInDB("carrito"),
+                message: "No se pudo encontrar el carrito",
+                code: EErrors.DATABASE_ERROR,
+            });
+            return next(error);
+        }
+
         cart.products = products;
+
+        const errorCause = validateCart(cart);
+        if (errorCause) {
+            const error = CustomError.createError({
+                name: "Carrito inválido",
+                cause: errorCause,
+                message: "Los parámetros son inválidos",
+                code: EErrors.INVALID_TYPES_ERROR,
+            });
+            return next(error);
+        }
+
         await cartsManager.saveCart(cart);
         res.json({ status: "success", message: "Carrito actualizado" });
     } catch (err) {
@@ -123,21 +162,46 @@ export const updateCartProductQuantity = async (req, res, next) => {
     const quantity = req.body.quantity;
     try {
         const cart = await cartsManager.getBy({ _id: cid });
+        if (cart == null) {
+            const error = CustomError.createError({
+                name: "Carrito no encontrado",
+                cause: notFoundInDB("carrito"),
+                message: "No se pudo encontrar el carrito",
+                code: EErrors.DATABASE_ERROR,
+            });
+            return next(error);
+        }
+
         const product = cart.products.find(
             (product) => product._id.toString() === pid
         );
         if (product) {
             product.quantity = quantity;
+
+            const errorCause = validateCart(cart);
+            if (errorCause) {
+                const error = CustomError.createError({
+                    name: "Carrito inválido",
+                    cause: errorCause,
+                    message: "Los parámetros son inválidos",
+                    code: EErrors.INVALID_TYPES_ERROR,
+                });
+                return next(error);
+            }
+
             await cartsManager.saveCart(cart);
             res.json({
                 status: "success",
                 message: "Cantidad de producto actualizada",
             });
         } else {
-            res.json({
-                status: "error",
+            const error = CustomError.createError({
+                name: "Producto no encontrado",
+                cause: notFoundInDB("producto"),
                 message: "Producto no encontrado en el carrito",
+                code: EErrors.DATABASE_ERROR,
             });
+            return next(error);
         }
     } catch (err) {
         return next(err);
@@ -149,7 +213,29 @@ export const clearCart = async (req, res, next) => {
     const { cid } = req.params;
     try {
         const cart = await cartsManager.getBy({ _id: cid });
+        if (cart == null) {
+            const error = CustomError.createError({
+                name: "Carrito no encontrado",
+                cause: notFoundInDB("carrito"),
+                message: "No se pudo encontrar el carrito",
+                code: EErrors.DATABASE_ERROR,
+            });
+            return next(error);
+        }
+
         cart.products = [];
+
+        const errorCause = validateCart(cart);
+        if (errorCause) {
+            const error = CustomError.createError({
+                name: "Carrito inválido",
+                cause: errorCause,
+                message: "Los parámetros son inválidos",
+                code: EErrors.INVALID_TYPES_ERROR,
+            });
+            return next(error);
+        }
+
         await cartsManager.saveCart(cart);
         res.json({
             status: "success",
@@ -172,8 +258,15 @@ export const completePurchase = async (req, res, next) => {
         let outOfStockProducts = [];
 
         // Si el carrito está vacío, devuelve un error
-        if (!cart || cart.products[0] === null)
-            return res.status(400).json({ error: "El carrito está vacío" });
+        if (!cart || cart.products[0] === null) {
+            const error = CustomError.createError({
+                name: "Carrito vacío",
+                cause: emptyCart(cart.products),
+                message: "El carrito está vacío",
+                code: EErrors.EMPTY_CART_ERROR,
+            });
+            return next(error);
+        }
 
         // Itera sobre los productos en el carrito
         for (let product of cart.products) {
@@ -199,10 +292,13 @@ export const completePurchase = async (req, res, next) => {
         if (outOfStockProducts.length > 0) {
             cart.products = outOfStockProducts;
             await cartsManager.updateCart(cart);
-            return res.status(400).json({
-                error: "No hay suficiente stock para los siguientes productos: ",
-                products: outOfStockProducts.map((item) => item.productId),
+            const error = CustomError.createError({
+                name: "Stock insuficiente",
+                cause: insufficientStock(outOfStockProducts),
+                message: "No hay suficiente stock para algunos productos",
+                code: EErrors.INSUFFICIENT_STOCK_ERROR,
             });
+            return next(error);
         }
 
         // Crea los detalles de la compra
@@ -224,3 +320,28 @@ export const completePurchase = async (req, res, next) => {
 const checkStock = async (product, productQuantity) => {
     return product.stock >= productQuantity;
 };
+
+function validateCart(cart) {
+    if (!Array.isArray(cart.products)) {
+        return "Los productos deben ser un array";
+    }
+
+    for (let i = 0; i < cart.products.length; i++) {
+        const product = cart.products[i];
+        if (
+            !product.productId ||
+            !mongoose.Types.ObjectId.isValid(product.productId)
+        ) {
+            return `El ID del producto en la posición ${i} no es válido`;
+        }
+        if (
+            product.quantity == null ||
+            typeof product.quantity !== "number" ||
+            product.quantity <= 0
+        ) {
+            return `La cantidad del producto en la posición ${i} no es válida`;
+        }
+    }
+
+    return null;
+}
