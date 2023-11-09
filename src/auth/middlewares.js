@@ -1,7 +1,7 @@
 import passport from "passport";
 import jwt from "jsonwebtoken";
 import UserDTO from "../dao/DTOs/user.dto.js";
-import { dotenvConfig } from "../config/config.js";
+import { dotenvConfig } from "../config/dotenv.config.js";
 const tokenSecret = dotenvConfig.tokenSecret;
 
 export const isAuthenticated = passport.authenticate("jwt", { session: false });

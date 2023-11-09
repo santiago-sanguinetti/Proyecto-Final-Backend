@@ -13,7 +13,7 @@ import chatRouter from "./routes/messages.router.js";
 import sessionRouter from "./routes/sessions.router.js";
 import passport from "passport";
 import initializePassport from "./config/passport.config.js";
-import { dotenvConfig } from "./config/config.js";
+import { dotenvConfig } from "./config/dotenv.config.js";
 import { isAuthenticated, isAdmin, isUser } from "./auth/middlewares.js";
 import cookieParser from "cookie-parser";
 import mockingRouter from "./routes/mocking.router.js";
