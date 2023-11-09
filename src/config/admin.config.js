@@ -1,4 +1,4 @@
-import { dotenvConfig } from "./config.js";
+import { dotenvConfig } from "./dotenv.config.js";
 
 export function isAdmin(email, password) {
     const adminEmail = dotenvConfig.adminEmail;

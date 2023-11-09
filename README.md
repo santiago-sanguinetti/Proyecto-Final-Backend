@@ -10,6 +10,7 @@ El proyecto ahora incluye las siguientes funcionalidades:
 
 - Ahora se contemplan más cantidad de errores
 - Ahora se incluye un código HTTP en el estado de los errores
+- Se corrigieron nombres de archivos que no seguían la nomenclatura del resto
 
 ## Uso
 

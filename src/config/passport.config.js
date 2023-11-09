@@ -5,7 +5,7 @@ import { userModel } from "../dao/models/users.model.js";
 import bcrypt from "bcrypt";
 import { adminUser, isAdmin } from "./admin.config.js";
 import { cartModel } from "../dao/models/carts.model.js";
-import { dotenvConfig } from "./config.js";
+import { dotenvConfig } from "./dotenv.config.js";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import Users from "../dao/managers/users.manager.js";
 const LocalStrategy = local.Strategy;
