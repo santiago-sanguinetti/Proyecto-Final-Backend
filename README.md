@@ -1,10 +1,10 @@
 # Backend-ProyectoFinal
-### Actualización 08/11/2023
+### Actualización 09/11/2023
 ## Nuevas funcionalidades de esta entrega
 
 El proyecto ahora incluye las siguientes funcionalidades:
 
-- Todavía no se ha implementado ninguna funcionalidad
+- Se implementó un sistema de logging mediante winston
 
 ## Correcciones y cambios menores
 
