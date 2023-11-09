@@ -19,6 +19,7 @@ import cookieParser from "cookie-parser";
 import mockingRouter from "./routes/mocking.router.js";
 import compression from "express-compression";
 import errorHandler from "./services/errors/middlewares.js";
+import { logger, addLogger } from "./config/logger.config.js";
 
 const app = express();
 app.use(cookieParser());
@@ -32,6 +33,8 @@ app.use(
 
 app.use(compression());
 
+app.use(addLogger);
+
 initializePassport();
 app.use(passport.initialize());
 app.use(passport.session());
@@ -42,10 +45,10 @@ const io = new Server(server);
 const PORT = dotenvConfig.port;
 
 server.listen(PORT, () => {
-    console.log(`El servidor está escuchando en el puerto ${PORT}`);
+    logger.info(`El servidor está escuchando en el puerto ${PORT}`);
 });
 export const socket = io.on("connection", (socket) => {
-    console.log("Un cliente se ha conectado.");
+    logger.info(`Un cliente se ha conectado`);
 });
 
 //Config Express
@@ -63,8 +66,8 @@ const dbURI = `mongodb+srv://${dotenvConfig.dbUser}:${dotenvConfig.dbPassword}@$
 
 mongoose
     .connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then((result) => console.log("Conectado a la base de datos"))
-    .catch((err) => console.log(err));
+    .then((result) => logger.info(`Conectado a la base de datos`))
+    .catch((err) => logger.error(err));
 
 //Config rutas
 app.use("/", viewsRouter);
