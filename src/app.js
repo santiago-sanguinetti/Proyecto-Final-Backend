@@ -20,6 +20,7 @@ import mockingRouter from "./routes/mocking.router.js";
 import compression from "express-compression";
 import errorHandler from "./services/errors/middlewares.js";
 import { logger, addLogger } from "./config/logger.config.js";
+import loggerRouter from "./routes/logger.router.js";
 
 const app = express();
 app.use(cookieParser());
@@ -72,6 +73,7 @@ mongoose
 //Config rutas
 app.use("/", viewsRouter);
 app.use("/mockingproducts", mockingRouter);
+app.use("/loggerTest", loggerRouter);
 app.use("/api/products", productRouter);
 app.use("/api/carts", cartRouter);
 app.use("/api/chat", isAuthenticated, isUser, chatRouter);
