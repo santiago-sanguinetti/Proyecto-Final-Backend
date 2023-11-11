@@ -21,12 +21,11 @@ router.post(
 router.post("/login", authenticate);
 
 router.post("/logout", isAuthenticated, (req, res) => {
-    console.log(res);
-    res.clearCookie("token"); //No está funcionando
+    res.clearCookie("token");
     req.logout();
     req.session.destroy();
 
-    res.redirect("/login");
+    // res.redirect("/login");
 });
 
 router.get(

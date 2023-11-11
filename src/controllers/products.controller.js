@@ -10,6 +10,7 @@ import {
     getAllProductsErrorInfo,
     getProductByIdErrorInfo,
 } from "../services/errors/info.js";
+import { logger } from "../config/logger.config.js";
 
 const productsManager = new productManager();
 // Mostrar todos los productos
@@ -34,6 +35,7 @@ export const getAllApiProducts = async (req, res, next) => {
             message: "Error tratando de obtener los productos",
             code: EErrors.INVALID_TYPES_ERROR,
         });
+        logger.warning(`Error al obtener los productos: ${error.cause}`);
         return next(error);
     }
 
@@ -62,6 +64,7 @@ export const getAllApiProducts = async (req, res, next) => {
 
         res.json(responseObject);
     } catch (err) {
+        logger.fatal(`Error fatal: ${err}`);
         return next(err);
     }
 };
@@ -114,6 +117,7 @@ export const getAllProducts = async (req, res, next) => {
                 : null,
         });
     } catch (err) {
+        logger.fatal(`Error fatal: ${err}`);
         return next(err);
     }
 };
@@ -149,6 +153,7 @@ export const getProductById = async (req, res, next) => {
 
         res.render("home", { products });
     } catch (err) {
+        logger.fatal(`Error fatal: ${err}`);
         return next(err);
     }
 };
@@ -205,6 +210,7 @@ export const createProduct = async (req, res, next) => {
             }
         }
     } catch (err) {
+        logger.fatal(`Error fatal: ${err}`);
         return next(err);
     }
 };
@@ -256,6 +262,7 @@ export const updateProduct = async (req, res, next) => {
         const updatedProduct = await productsManager.saveProduct(product);
         res.json(updatedProduct);
     } catch (err) {
+        logger.fatal(`Error fatal: ${err}`);
         return next(err);
     }
 };
@@ -280,6 +287,7 @@ export const deleteProductById = async (req, res) => {
 
         res.json({ message: "Producto eliminado" });
     } catch (err) {
+        logger.fatal(`Error fatal: ${err}`);
         return next(err);
     }
 };
