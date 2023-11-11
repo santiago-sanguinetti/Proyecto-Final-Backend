@@ -14,10 +14,10 @@ const customLevelOptions = {
     },
     colors: {
         fatal: "red",
-        error: "orange",
+        error: "magenta",
         warning: "yellow",
         info: "blue",
-        debug: "white",
+        debug: "grey",
     },
 };
 
@@ -51,6 +51,12 @@ const prodLogger = winston.createLogger({
 export const addLogger = (req, res, next) => {
     req.logger = logger;
     req.logger.http(`${req.method} en ${req.url}`);
+    next();
+};
+
+export const addWarning = (req, res, next) => {
+    req.logger = logger;
+    req.logger.warning(`${req.method} en ${req.url}`);
     next();
 };
 
