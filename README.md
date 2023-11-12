@@ -5,6 +5,8 @@
 El proyecto ahora incluye las siguientes funcionalidades:
 
 - Se implementó un sistema de logging mediante winston
+- Nuevo endpoint: `/loggerTest`
+  - Permite testear el nuevo sistema de logging en consola
 
 ## Correcciones y cambios menores
 
