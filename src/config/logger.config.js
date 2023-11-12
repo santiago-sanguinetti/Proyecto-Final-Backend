@@ -17,34 +17,36 @@ const customLevelOptions = {
         error: "magenta",
         warning: "yellow",
         info: "blue",
+        http: "green",
         debug: "grey",
     },
 };
 
 const errorLogPath = path.join(__dirname, "./services/errors/errors.log");
 
-const logFormat = winston.format.combine(
+const consoleFormat = winston.format.combine(
     winston.format.colorize({ colors: customLevelOptions.colors }),
     winston.format.printf(({ level, message }) => {
         return `[${new Date().toLocaleTimeString()}] ${level}: ${message}`;
     })
 );
 
-const devLogger = winston.createLogger({
-    levels: customLevelOptions.levels,
-    format: logFormat,
-    transports: [
-        new winston.transports.Console({ level: "debug" }),
-        new winston.transports.File({ filename: errorLogPath, level: "error" }),
-    ],
+const fileFormat = winston.format.printf(({ level, message }) => {
+    return `[${new Date().toLocaleString()}] ${level}: ${message}`;
 });
 
-const prodLogger = winston.createLogger({
+export const logger = winston.createLogger({
     levels: customLevelOptions.levels,
-    format: logFormat,
     transports: [
-        new winston.transports.Console({ level: "info" }),
-        new winston.transports.File({ filename: errorLogPath, level: "error" }),
+        new winston.transports.Console({
+            level: dotenvConfig.loggerLevel === "dev" ? "debug" : "info",
+            format: consoleFormat,
+        }),
+        new winston.transports.File({
+            filename: errorLogPath,
+            level: "error",
+            format: fileFormat,
+        }),
     ],
 });
 
@@ -59,6 +61,3 @@ export const addWarning = (req, res, next) => {
     req.logger.warning(`${req.method} en ${req.url}`);
     next();
 };
-
-export const logger =
-    dotenvConfig.loggerLevel === "dev" ? devLogger : prodLogger;
