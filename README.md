@@ -1,5 +1,5 @@
 # Backend-ProyectoFinal
-### Actualización 09/11/2023
+### Actualización 12/11/2023
 ## Nuevas funcionalidades de esta entrega
 
 El proyecto ahora incluye las siguientes funcionalidades:
@@ -7,6 +7,7 @@ El proyecto ahora incluye las siguientes funcionalidades:
 - Se implementó un sistema de logging mediante winston
 - Nuevo endpoint: `/loggerTest`
   - Permite testear el nuevo sistema de logging en consola
+  - Para cambiar entre entorno de desarrollo y productivo cambiar la variable de entorno correspondiente
 
 ## Correcciones y cambios menores
 
