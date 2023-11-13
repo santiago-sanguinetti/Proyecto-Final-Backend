@@ -42,3 +42,7 @@ export const emptyCart = (products) => {
 export const insufficientStock = (outOfStockProducts) => {
     return `No hay suficiente stock para los siguientes productos: ${outOfStockProducts}`;
 };
+
+export const passportAuthenticateError = (info) => {
+    return `Error al intentar autenticar con passport: ${info}`;
+};
