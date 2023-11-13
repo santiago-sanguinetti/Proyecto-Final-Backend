@@ -147,7 +147,7 @@ export const deleteProductFromCart = async (req, res, next) => {
 
 //Actualizar el carrito con array de productos
 export const updateCartFromArray = async (req, res, next) => {
-    logger.ingo("Actualizando carrito desde un array");
+    logger.info("Actualizando carrito desde un array");
     const { cid } = req.params;
     const products = req.body.products;
     try {
