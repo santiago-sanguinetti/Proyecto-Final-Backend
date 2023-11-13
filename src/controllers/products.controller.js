@@ -15,6 +15,7 @@ import { logger } from "../config/logger.config.js";
 const productsManager = new productManager();
 // Mostrar todos los productos
 export const getAllApiProducts = async (req, res, next) => {
+    logger.info("Obteniendo todos los productos de la API");
     const limit = parseInt(req.query.limit) || 10; // Si no se proporciona un límite, se establece un valor predeterminado
     const page = Number(req.query.page) || 1;
     const sort = req.query.sort;
@@ -35,7 +36,9 @@ export const getAllApiProducts = async (req, res, next) => {
             message: "Error tratando de obtener los productos",
             code: EErrors.INVALID_TYPES_ERROR,
         });
-        logger.warning(`Error al obtener los productos: ${error.cause}`);
+        logger.error(
+            `Error al obtener los productos de la API: ${error.message}`
+        );
         return next(error);
     }
 
@@ -61,14 +64,17 @@ export const getAllApiProducts = async (req, res, next) => {
             prevPage,
             nextPage
         );
-
+        logger.info("Productos obtenidos exitosamente");
         res.json(responseObject);
     } catch (err) {
-        logger.fatal(`Error fatal: ${err}`);
+        logger.error(
+            `Error al obtener los productos de la API: ${err.message}`
+        );
         return next(err);
     }
 };
 export const getAllProducts = async (req, res, next) => {
+    logger.info("Obteniendo todos los productos");
     const limit = Number(req.query.limit) || 10;
     const page = Number(req.query.page) || 1;
 
@@ -90,6 +96,7 @@ export const getAllProducts = async (req, res, next) => {
             message: "Error tratando de obtener los productos",
             code: EErrors.INVALID_TYPES_ERROR,
         });
+        logger.error(`Error al obtener los productos: ${error.message}`);
         return next(error);
     }
 
@@ -100,6 +107,7 @@ export const getAllProducts = async (req, res, next) => {
         const totalPages = Math.ceil(totalProducts / limit);
         const prevPage = page > 1 ? page - 1 : null;
         const nextPage = page < totalPages ? page + 1 : null;
+        logger.info("Productos obtenidos exitosamente");
         res.render("products", {
             user: req.session.user,
             products: products,
@@ -117,13 +125,14 @@ export const getAllProducts = async (req, res, next) => {
                 : null,
         });
     } catch (err) {
-        logger.fatal(`Error fatal: ${err}`);
+        logger.error(`Error al obtener los productos: ${err.message}`);
         return next(err);
     }
 };
 
 // Buscar un producto por id
 export const getProductById = async (req, res, next) => {
+    logger.info("Obteniendo un producto por ID");
     try {
         const products = new Array();
         const id = req.params.pid;
@@ -135,6 +144,7 @@ export const getProductById = async (req, res, next) => {
                 message: "Error tratando de obtener el producto",
                 code: EErrors.INVALID_TYPES_ERROR,
             });
+            logger.error(`Error al obtener el producto: ${error.cause}`);
             return next(error);
         }
 
@@ -148,17 +158,19 @@ export const getProductById = async (req, res, next) => {
                 message: "Error tratando de obtener el producto",
                 code: EErrors.DATABASE_ERROR,
             });
+            logger.error(`Error al obtener el producto: ${error.cause}`);
             return next(error);
         }
-
+        logger.info("Producto obtenido exitosamente");
         res.render("home", { products });
     } catch (err) {
-        logger.fatal(`Error fatal: ${err}`);
+        logger.error(`Error al obtener el producto: ${err.message}`);
         return next(err);
     }
 };
 // Crear un producto
 export const createProduct = async (req, res, next) => {
+    logger.info("Creando un producto");
     try {
         const product = {
             title: req.body.title,
@@ -181,6 +193,7 @@ export const createProduct = async (req, res, next) => {
                 message: "El código del producto ya está en uso",
                 code: EErrors.DATABASE_ERROR,
             });
+            logger.error(`Error al crear el producto: ${error.cause}`);
             return next(error);
         } else {
             const errorCause = validateProduct(product);
@@ -192,6 +205,7 @@ export const createProduct = async (req, res, next) => {
                     message: "Los parámetros son inválidos",
                     code: EErrors.INVALID_TYPES_ERROR,
                 });
+                logger.error(`Error al crear el producto: ${error.cause}`);
                 return next(error);
             }
             const createProduct = await productsManager.createProduct(product);
@@ -203,20 +217,22 @@ export const createProduct = async (req, res, next) => {
 
                 //Emite un evento "product-created" cada vez que se crea un producto
                 socket.emit("product-created", newProduct);
-
+                logger.info("Producto creado exitosamente");
                 res.status(201).json(newProduct);
             } catch (err) {
+                logger.error(`Error al crear el producto: ${err.cause}`);
                 return next(err);
             }
         }
     } catch (err) {
-        logger.fatal(`Error fatal: ${err}`);
+        logger.error(`Error al crear el producto: ${err.message}`);
         return next(err);
     }
 };
 
 // Actualizar un producto
 export const updateProduct = async (req, res, next) => {
+    logger.info("Actualizando un producto");
     try {
         const product = await productsManager.getBy({ _id: req.params.pid });
         if (product == null) {
@@ -226,6 +242,7 @@ export const updateProduct = async (req, res, next) => {
                 message: "No se pudo encontrar el producto",
                 code: EErrors.DATABASE_ERROR,
             });
+            logger.error(`Error al actualizar el producto: ${error.cause}`);
             return next(error);
         }
 
@@ -256,18 +273,21 @@ export const updateProduct = async (req, res, next) => {
                 message: "Los parámetros son inválidos",
                 code: EErrors.INVALID_TYPES_ERROR,
             });
+            logger.error(`Error al actualizar el producto: ${error.cause}`);
             return next(error);
         }
 
         const updatedProduct = await productsManager.saveProduct(product);
+        logger.info("Producto actualizado exitosamente");
         res.json(updatedProduct);
     } catch (err) {
-        logger.fatal(`Error fatal: ${err}`);
+        logger.error(`Error al actualizar el producto: ${err.message}`);
         return next(err);
     }
 };
 // Eliminar un producto
 export const deleteProductById = async (req, res) => {
+    logger.info("Eliminando un producto");
     try {
         const product = await productsManager.getBy({ _id: req.params.pid });
         if (product == null) {
@@ -277,6 +297,7 @@ export const deleteProductById = async (req, res) => {
                 message: "No se pudo encontrar el producto",
                 code: EErrors.DATABASE_ERROR,
             });
+            logger.error(`Error al eliminar el producto: ${error.cause}`);
             return next(error);
         }
 
@@ -285,15 +306,17 @@ export const deleteProductById = async (req, res) => {
         // Emite un evento 'product-deleted' cada vez que se elimina un producto
         socket.emit("product-deleted", req.params.pid);
 
+        logger.info("Producto eliminado exitosamente");
         res.json({ message: "Producto eliminado" });
     } catch (err) {
-        logger.fatal(`Error fatal: ${err}`);
+        logger.error(`Error al eliminar el producto: ${err.message}`);
         return next(err);
     }
 };
 
 // Función auxiliar para construir el objeto sortObject
 const buildSortObject = (sort) => {
+    logger.debug("Construyendo objeto de ordenamiento");
     let sortObject = {};
     if (sort === "asc") {
         sortObject.price = 1;
@@ -305,6 +328,7 @@ const buildSortObject = (sort) => {
 
 // Función auxiliar para construir el objeto queryObject
 const buildQueryObject = (query) => {
+    logger.debug("Construyendo objeto de consulta");
     let queryObject = {};
     if (query) {
         queryObject.$or = [
@@ -324,6 +348,7 @@ const buildResponseObject = (
     prevPage,
     nextPage
 ) => {
+    logger.debug("Construyendo objeto de respuesta");
     return {
         status: "success",
         payload: products,
@@ -344,6 +369,7 @@ const buildResponseObject = (
 
 // Función auxiliar para validar los datos de un producto
 export const validateProduct = (product) => {
+    logger.debug("Validando producto");
     const expectedTypes = {
         title: "string",
         description: "string",
@@ -369,12 +395,18 @@ export const validateProduct = (product) => {
                 ? !Array.isArray(product[key])
                 : typeof product[key] !== type
         ) {
+            logger.debug(
+                `Error al validar el producto: el campo ${key} no es del tipo esperado`
+            );
             return createProductErrorInfo(product);
         }
     }
 
     for (const field of requiredFields) {
         if (!product[field]) {
+            logger.debug(
+                `Error al validar el producto: el campo ${field} es requerido`
+            );
             return createProductErrorInfo(product);
         }
     }
@@ -384,5 +416,12 @@ export const validateProduct = (product) => {
 
 // Función auxiliar para validar si un id de mongo es válido
 export const isValidObjectId = (id) => {
-    return mongoose.Types.ObjectId.isValid(id);
+    logger.debug("Validando ID de objeto");
+    const isValid = mongoose.Types.ObjectId.isValid(id);
+    if (!isValid) {
+        logger.debug(
+            `Error al validar ID de objeto: ${id} no es un ID de MongoDB válido`
+        );
+    }
+    return isValid;
 };
