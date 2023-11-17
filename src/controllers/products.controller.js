@@ -286,7 +286,7 @@ export const updateProduct = async (req, res, next) => {
     }
 };
 // Eliminar un producto
-export const deleteProductById = async (req, res) => {
+export const deleteProductById = async (req, res, next) => {
     logger.info("Eliminando un producto");
     try {
         const product = await productsManager.getBy({ _id: req.params.pid });
