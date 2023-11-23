@@ -172,6 +172,9 @@ export const getProductById = async (req, res, next) => {
 export const createProduct = async (req, res, next) => {
     logger.info("Creando un producto");
     try {
+        let productOwner = "admin";
+        if (req.user && req.user.role === "premium")
+            productOwner = req.user._id;
         const product = {
             title: req.body.title,
             description: req.body.description,
@@ -181,7 +184,7 @@ export const createProduct = async (req, res, next) => {
             stock: req.body.stock,
             category: req.body.category,
             thumbnails: req.body.thumbnails ?? [],
-            owner: req.user._id,
+            owner: productOwner,
         };
 
         const existingProduct = await productsManager.getBy({

@@ -15,7 +15,7 @@ router.get("/", getAllProducts);
 //Buscar un producto por id
 router.get("/:pid", getProductById);
 //Crear un producto
-router.post("/", isAuthenticated, hasRole("premium"), createProduct);
+router.post("/", isAuthenticated, hasRole("premium", "admin"), createProduct);
 //Actualizar un producto
 router.put("/:pid", isAuthenticated, hasRole("admin"), updateProduct);
 //Eliminar un producto
