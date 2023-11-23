@@ -8,6 +8,7 @@ import {
     saveResetTokenError,
 } from "../services/errors/info.js";
 import { sendRecoveryMail } from "../services/mailer.js";
+import bcrypt from "bcrypt";
 
 const usersManager = new userManager();
 
@@ -26,7 +27,6 @@ export const forgotPassword = async (req, res, next) => {
             });
             return next(error);
         }
-        req.logger.debug("Paso 2");
         const user = await usersManager.getBy({ email: req.body.email });
 
         req.logger.debug(`user: ${user}`);
@@ -66,7 +66,26 @@ export const resetPassword = async (req, res, next) => {
 
         if (Date.now() > user.passwordResetExpires) {
             req.logger.debug("Token expirado");
-            return res.status(400).send({ message: "El token ha expirado" });
+            return res.send(`
+                <script>
+                    setTimeout(function(){
+                        window.location.href = '/forgot-my-password';
+                    }, 3000);
+                </script>
+                <p>El token ha expirado. Serás redirigido en 3 segundos...</p>
+            `);
+        }
+
+        const isSamePassword = await bcrypt.compare(
+            req.body.password,
+            user.password
+        );
+        if (isSamePassword) {
+            req.logger.debug("Misma contraseña");
+            return res.status(400).send({
+                message:
+                    "La nueva contraseña no puede ser igual a la contraseña actual",
+            });
         }
 
         user.password = req.body.password;
