@@ -5,6 +5,13 @@
 El proyecto ahora incluye las siguientes funcionalidades:
 
 - Se implementó una función para restablecer la contraseña de un usuario
+- Nuevo rol para usuarios: `premium`
+- Los productos ahora cuentan con un campo `owner` que indica el id del usuario que lo creó
+- Nuevos permisos requeridos para el acceso de algunos endpoints
+- Los productos ahora solo se pueden borrar si el usuario es `admin`, o `premium` y `owner` del producto
+- Los usuarios  `premium` no pueden agregar sus propios productos al carrito
+- Nueva ruta: `/api/users/premium/:uid`
+  - Permite cambiar el rol del usuario (con id: `uid`) entre `usuario` y `premium`
 
 ## Correcciones y cambios menores
 
