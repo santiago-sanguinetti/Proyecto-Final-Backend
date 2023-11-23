@@ -4,6 +4,17 @@ import { logger } from "../config/logger.config.js";
 logger;
 
 export const sendRecoveryMail = async (req, res) => {
+    if (!dotenvConfig.mailUser || !dotenvConfig.mailPass) {
+        logger.warning(
+            `Ingrese a las variables de entorno para configurar un email y contraseña`
+        );
+        return res
+            .status(404)
+            .send(
+                "Ingrese a las variables de entorno para configurar un email y contraseña"
+            );
+    }
+
     logger.info("Enviando un e-mail");
     let mail = await transporter.sendMail(
         {
