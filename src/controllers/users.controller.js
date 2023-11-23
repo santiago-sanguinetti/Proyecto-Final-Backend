@@ -95,3 +95,13 @@ export const resetPassword = async (req, res, next) => {
         return next(err);
     }
 };
+
+export const swapUserRole = async (req, res, next) => {
+    const user = await usersManager.getBy({ _id: req.params.uid });
+    if (!user) {
+        return res.status(404).send({ message: "Usuario no encontrado" });
+    }
+    user.role = user.role === "user" ? "premium" : "user";
+    usersManager.updateRole(user);
+    res.send(user);
+};

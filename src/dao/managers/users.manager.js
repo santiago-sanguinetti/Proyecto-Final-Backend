@@ -57,4 +57,19 @@ export default class Users {
     getBy = async (params) => {
         return await userModel.findOne(params).lean();
     };
+
+    updateRole = async (user) => {
+        try {
+            const updatedUser = await userModel
+                .findOne({ _id: user._id })
+                .then(async (dbUser) => {
+                    dbUser.role = user.role;
+                    await dbUser.save();
+                });
+            return await updatedUser;
+        } catch (error) {
+            logger.error(error.message);
+            throw error;
+        }
+    };
 }

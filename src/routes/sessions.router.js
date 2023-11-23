@@ -1,14 +1,10 @@
 import express from "express";
 import passport from "passport";
-import {
-    isAuthenticated,
-    isAdmin,
-    isUser,
-    authenticate,
-} from "../auth/middlewares.js";
+import { isAuthenticated, authenticate } from "../auth/middlewares.js";
 import {
     forgotPassword,
     resetPassword,
+    swapUserRole,
 } from "../controllers/users.controller.js";
 
 const router = express.Router();
@@ -58,5 +54,7 @@ router.get("/current", isAuthenticated, (req, res) => {
         token: req.cookies.token,
     });
 });
+
+router.put("/premium/:uid", swapUserRole);
 
 export default router;
