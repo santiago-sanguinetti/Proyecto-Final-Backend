@@ -49,6 +49,7 @@ export const addProductToCart = async (req, res, next) => {
     logger.info("Agregando un producto al carrito");
     try {
         const cart = await cartsManager.getBy({ _id: req.params.cid });
+        logger.debug(cart.products);
         if (cart == null) {
             const error = CustomError.createError({
                 name: "Carrito no encontrado",
@@ -62,8 +63,29 @@ export const addProductToCart = async (req, res, next) => {
             return next(error);
         }
 
+        const product = await productsManager.getBy({ _id: req.params.pid });
+        if (!product) {
+            const error = CustomError.createError({
+                name: "Producto no encontrado",
+                cause: notFoundInDB("producto"),
+                message: "No se pudo encontrar el producto",
+                code: EErrors.DATABASE_ERROR,
+            });
+            logger.error(
+                `Error al agregar producto al carrito: ${error.message}`
+            );
+            return next(error);
+        }
+
+        // Verifica si el producto pertenece al usuario
+        if (product.owner.toString() === req.user._id.toString()) {
+            return res.status(400).send({
+                message: "No puedes agregar tus propios productos al carrito",
+            });
+        }
+
         const productIndex = cart.products.findIndex(
-            (p) => p.productId.toString() === req.params.pid
+            (p) => p && p.productId.toString() === req.params.pid
         );
         if (productIndex > -1) {
             // Si el producto ya existe en el carrito, incrementa la cantidad

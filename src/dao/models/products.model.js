@@ -11,6 +11,7 @@ const productSchema = new mongoose.Schema({
     stock: Number,
     category: { type: String, required: true },
     thumbnails: Array,
+    owner: { type: String, default: "admin" },
 });
 
 export const productModel = mongoose.model(productCollection, productSchema);
