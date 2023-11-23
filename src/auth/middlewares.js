@@ -5,6 +5,7 @@ import { dotenvConfig } from "../config/dotenv.config.js";
 import CustomError from "../services/errors/CustomError.js";
 import { passportAuthenticateError } from "../services/errors/info.js";
 import EErrors from "../services/errors/enums.js";
+import { logger } from "../config/logger.config.js";
 const tokenSecret = dotenvConfig.tokenSecret;
 
 export const isAuthenticated = passport.authenticate("jwt", { session: false });

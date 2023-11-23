@@ -8,6 +8,7 @@ import { cartModel } from "../dao/models/carts.model.js";
 import { dotenvConfig } from "./dotenv.config.js";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import Users from "../dao/managers/users.manager.js";
+import { logger } from "./logger.config.js";
 const LocalStrategy = local.Strategy;
 const sessionsManager = new Users();
 
@@ -32,7 +33,7 @@ const initializePassport = () => {
                     const user = await userModel.findOne({ email: username });
 
                     if (user) {
-                        console.log("User already exists");
+                        logger.warning("El usuario ya existe");
                         return done(null, false);
                     }
                     const { first_name, last_name, age, email } = req.body;
@@ -47,7 +48,7 @@ const initializePassport = () => {
                         password: hashedPassword,
                         cart: newCart._id,
                     };
-                    console.log(newUser);
+                    logger.debug(`Nuevo usuario: ${newUser}`);
                     const result = await userModel.create(newUser);
                     return done(null, result);
                 } catch (err) {
@@ -96,7 +97,7 @@ const initializePassport = () => {
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
-                    console.log(profile);
+                    logger.debug(profile);
                     let user = await userModel.findOne({
                         email: profile._json.email,
                     });

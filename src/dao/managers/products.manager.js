@@ -46,7 +46,6 @@ export default class Products {
 
     updateProductStock = async (product, quantity) => {
         try {
-            console.log(product, quantity);
             product.stock -= quantity;
 
             const updatedProduct = await productModel.findByIdAndUpdate(

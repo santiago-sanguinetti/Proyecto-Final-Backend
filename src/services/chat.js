@@ -32,7 +32,6 @@ document.getElementById("message-form").addEventListener("submit", (e) => {
 
     const messageUser = document.getElementById("message-user");
     const user = messageUser.value;
-    console.log(user, message);
     // Emitir el evento 'send-message'
     socket.emit("send-message", { user: user, message: message });
 

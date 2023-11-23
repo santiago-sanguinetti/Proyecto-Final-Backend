@@ -24,7 +24,6 @@ export const showCart = async (req, res) => {
             .findById("650a07c3860aebb9f03b2e69") //cid
             .populate("products.productId")
             .lean();
-        // console.log(JSON.stringify(cart, null, 2));
         res.render("cart", { cart: cart });
     } catch (err) {
         res.status(500).send(err.message);

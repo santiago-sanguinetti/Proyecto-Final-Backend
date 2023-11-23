@@ -197,7 +197,6 @@ export const createProduct = async (req, res, next) => {
             return next(error);
         } else {
             const errorCause = validateProduct(product);
-            console.log(errorCause);
             if (errorCause) {
                 const error = CustomError.createError({
                     name: "Producto inválido",
