@@ -14,7 +14,7 @@ import sessionRouter from "./routes/sessions.router.js";
 import passport from "passport";
 import initializePassport from "./config/passport.config.js";
 import { dotenvConfig } from "./config/dotenv.config.js";
-import { isAuthenticated, isAdmin, isUser } from "./auth/middlewares.js";
+import { isAuthenticated, hasRole } from "./auth/middlewares.js";
 import cookieParser from "cookie-parser";
 import mockingRouter from "./routes/mocking.router.js";
 import compression from "express-compression";
@@ -76,17 +76,18 @@ app.use("/mockingproducts", mockingRouter);
 app.use("/loggerTest", loggerRouter);
 app.use("/api/products", productRouter);
 app.use("/api/carts", cartRouter);
-app.use("/api/chat", isAuthenticated, isUser, chatRouter);
+app.use("/api/chat", isAuthenticated, hasRole("user"), chatRouter);
 app.use("/api/sessions", sessionRouter);
+app.use("/api/users", sessionRouter);
 
 //Endpoints para testear autorización
 app.get("/protected", isAuthenticated, (req, res) => {
     res.json({ msg: "OK - Ruta protegida" });
 });
-app.get("/admin", isAuthenticated, isAdmin, (req, res) => {
+app.get("/admin", isAuthenticated, hasRole("admin"), (req, res) => {
     res.json({ msg: "OK - Ruta solo para administradores" });
 });
-app.get("/user", isAuthenticated, isUser, (req, res) => {
+app.get("/user", isAuthenticated, hasRole("user"), (req, res) => {
     res.json({ msg: "OK - Ruta solo para usuarios" });
 });
 

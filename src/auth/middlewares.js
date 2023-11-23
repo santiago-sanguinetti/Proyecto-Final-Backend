@@ -10,37 +10,25 @@ const tokenSecret = dotenvConfig.tokenSecret;
 
 export const isAuthenticated = passport.authenticate("jwt", { session: false });
 
-export const isAdmin = (req, res, next) => {
-    logger.info("Verificando si el usuario es administrador");
-    if (req.user && req.user.role === "admin") {
-        logger.info("Usuario es administrador");
-        next();
-    } else {
-        logger.warning("Usuario no es administrador");
-        res.status(403).send({ message: "Requiere rol de administrador" });
-    }
-};
-
-export const isUser = (req, res, next) => {
-    logger.info("Verificando si el usuario es un usuario normal");
-    if (req.user && req.user.role === "usuario") {
-        logger.info("Usuario es un usuario normal");
-        next();
-    } else {
-        logger.warning("Usuario no es un usuario normal");
-        res.status(403).send({ message: "Requiere rol de usuario" });
-    }
-};
-
-export const isNotLoggedIn = (req, res, next) => {
-    logger.info("Verificando si el usuario no está logueado");
-    if (req.isAuthenticated) {
-        logger.warning("Usuario ya está logueado");
-        res.redirect("/profile");
-    } else {
-        logger.info("Usuario no está logueado");
-        next();
-    }
+export const hasRole = (...roles) => {
+    return (req, res, next) => {
+        logger.info(
+            `Verificando si el usuario tiene uno de los siguientes roles: ${roles.join(
+                ", "
+            )}`
+        );
+        if (req.user && roles.includes(req.user.role)) {
+            logger.info(`Usuario tiene el rol ${req.user.role}`);
+            next();
+        } else {
+            logger.warning(`Usuario no tiene ninguno de los roles requeridos`);
+            res.status(403).send({
+                message: `Requiere uno de los siguientes roles: ${roles.join(
+                    ", "
+                )}`,
+            });
+        }
+    };
 };
 
 export const authenticate = async (req, res, next) => {
@@ -80,4 +68,49 @@ export const authenticate = async (req, res, next) => {
             return next(err);
         }
     })(req, res, next);
+};
+
+//Funciones deprecadas, se eliminarán en la próxima versión
+export const isAdmin = (req, res, next) => {
+    logger.info("Verificando si el usuario es administrador");
+    if (req.user && req.user.role === "admin") {
+        logger.info("Usuario es administrador");
+        next();
+    } else {
+        logger.warning("Usuario no es administrador");
+        res.status(403).send({ message: "Requiere rol de administrador" });
+    }
+};
+
+export const isUser = (req, res, next) => {
+    logger.info("Verificando si el usuario es un usuario normal");
+    if (req.user && req.user.role === "usuario") {
+        logger.info("Usuario es un usuario normal");
+        next();
+    } else {
+        logger.warning("Usuario no es un usuario normal");
+        res.status(403).send({ message: "Requiere rol de usuario" });
+    }
+};
+
+export const isPremium = (req, res, next) => {
+    logger.info("Verificando si el usuario es un usuario premium");
+    if (req.user && req.user.role === "premium") {
+        logger.info("Usuario es un usuario premium");
+        next();
+    } else {
+        logger.warning("Usuario no es un usuario premium");
+        res.status(403).send({ message: "Requiere rol de usuario premium" });
+    }
+};
+
+export const isNotLoggedIn = (req, res, next) => {
+    logger.info("Verificando si el usuario no está logueado");
+    if (req.isAuthenticated) {
+        logger.warning("Usuario ya está logueado");
+        res.redirect("/profile");
+    } else {
+        logger.info("Usuario no está logueado");
+        next();
+    }
 };
