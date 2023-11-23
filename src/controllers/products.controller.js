@@ -181,6 +181,7 @@ export const createProduct = async (req, res, next) => {
             stock: req.body.stock,
             category: req.body.category,
             thumbnails: req.body.thumbnails ?? [],
+            owner: req.user._id,
         };
 
         const existingProduct = await productsManager.getBy({
@@ -300,13 +301,26 @@ export const deleteProductById = async (req, res, next) => {
             return next(error);
         }
 
-        await productsManager.deleteById(req.params.id);
+        const userId = req.user._id; // El usuario admin devuelve undefined
+        if (userId) userId = userId.toString();
+        const userIsOwner = product.owner === userId;
 
-        // Emite un evento 'product-deleted' cada vez que se elimina un producto
-        socket.emit("product-deleted", req.params.pid);
+        if (userIsOwner || req.user.role === "admin") {
+            await productsManager.deleteById(req.params.pid);
 
-        logger.info("Producto eliminado exitosamente");
-        res.json({ message: "Producto eliminado" });
+            // Emite un evento 'product-deleted' cada vez que se elimina un producto
+            socket.emit("product-deleted", req.params.pid);
+
+            logger.info("Producto eliminado exitosamente");
+            res.json({ message: "Producto eliminado" });
+        } else {
+            logger.info(
+                "No se tienen los permisos necesarios para borrar un producto"
+            );
+            res.json({
+                message: "No tiene permisos para realizar esta acción",
+            });
+        }
     } catch (err) {
         logger.error(`Error al eliminar el producto: ${err.message}`);
         return next(err);
