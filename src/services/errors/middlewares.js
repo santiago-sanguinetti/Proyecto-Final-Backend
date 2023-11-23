@@ -1,6 +1,6 @@
 import EErrors from "./enums.js";
 export default (error, req, res, next) => {
-    console.log(error.cause);
+    req.logger.error(error.cause);
     let httpStatusCode;
     switch (error.code) {
         case EErrors.INVALID_TYPES_ERROR:
@@ -14,6 +14,9 @@ export default (error, req, res, next) => {
             break;
         case EErrors.INSUFFICIENT_STOCK_ERROR:
             httpStatusCode = 400;
+            break;
+        case EErrors.NOT_FOUND_ERROR:
+            httpStatusCode = 404;
             break;
         default:
             httpStatusCode = 500;

@@ -16,4 +16,6 @@ export const dotenvConfig = {
     githubCallbackUrl: process.env.GITHUB_CALLBACK_URL,
     tokenSecret: process.env.TOKEN_SECRET,
     loggerLevel: process.env.LOGGER_LEVEL,
+    mailUser: process.env.MAIL_USER,
+    mailPass: process.env.MAIL_PASS,
 };

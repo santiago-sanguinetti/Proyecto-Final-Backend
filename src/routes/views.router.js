@@ -9,7 +9,7 @@ import { isAuthenticated } from "../auth/middlewares.js";
 const router = Router();
 
 router.get("/", async (req, res) => {
-    res.redirect("/products");
+    res.redirect("/login");
 });
 
 router.get("/realtimeproducts", getRealtimeProducts);
@@ -36,4 +36,12 @@ router.post("/logout", isAuthenticated, (req, res) => {
     res.redirect("/login");
 });
 
+//-------------------- Recovery --------------------
+router.get("/forgot-my-password", (req, res) => {
+    res.render("forgotMyPassword");
+});
+
+router.get("/api/sessions/reset-password/:token", (req, res) => {
+    res.render("resetPassword", { token: req.params.token });
+});
 export default router;

@@ -6,6 +6,10 @@ import {
     isUser,
     authenticate,
 } from "../auth/middlewares.js";
+import {
+    forgotPassword,
+    resetPassword,
+} from "../controllers/users.controller.js";
 
 const router = express.Router();
 
@@ -27,6 +31,10 @@ router.post("/logout", isAuthenticated, (req, res) => {
 
     // res.redirect("/login");
 });
+
+router.post("/forgot-my-password", forgotPassword);
+
+router.post("/reset-password/:token", resetPassword);
 
 router.get(
     "/github",

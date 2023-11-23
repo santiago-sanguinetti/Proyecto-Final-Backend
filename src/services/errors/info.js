@@ -44,5 +44,13 @@ export const insufficientStock = (outOfStockProducts) => {
 };
 
 export const passportAuthenticateError = (info) => {
-    return `Error al intentar autenticar con passport: ${info}`;
+    return `Error al intentar autenticar con passport: ${info.message}`;
+};
+
+export const saveResetTokenError = () => {
+    return `Error al guardar el token de restablecimiento de contraseña.`;
+};
+
+export const invalidEmailError = () => {
+    return `No se recibió un email, o el email es inválido`;
 };
