@@ -118,10 +118,10 @@ export const getAllProducts = async (req, res, next) => {
             hasPrevPage: prevPage !== null,
             hasNextPage: nextPage !== null,
             prevLink: prevPage
-                ? `/productos?page=${prevPage}&limit=${limit}`
+                ? `/products?page=${prevPage}&limit=${limit}`
                 : null,
             nextLink: nextPage
-                ? `/productos?page=${nextPage}&limit=${limit}`
+                ? `/products?page=${nextPage}&limit=${limit}`
                 : null,
         });
     } catch (err) {
