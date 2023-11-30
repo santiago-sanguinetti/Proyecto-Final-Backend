@@ -1,0 +1,189 @@
+components:
+  securitySchemes:
+    CookieAuth:
+      type: JWT
+      in: cookie
+      name: token
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Id autogenerado de Mongo
+          required: true
+          unique: true
+          readOnly: true
+        title:
+          type: string
+          description: Título del producto
+          required: true
+        description:
+          type: string
+          description: Descripción del producto
+          required: true
+        code:
+          type: string
+          description: Código único del producto
+          required: true
+          unique: true
+        price:
+          type: number
+          description: Precio del producto
+          required: true
+        status:
+          type: boolean
+          description: Disponibilidad del producto
+          default: true
+        stock:
+          type: integer
+          description: Cantidad disponible del producto
+          format: int32
+        category:
+          type: string
+          description: Categoría del producto
+          required: true
+        thumbnails:
+          type: array
+          description: Imagenes del producto (URL)
+          items:
+            type: string
+          default: []
+        owner:
+          type: string
+          description: Dueño del producto
+          default: admin
+          readOnly: true
+
+paths:
+  /api/products/:
+    get:
+      summary: Obtiene todos los productos y los renderiza en una vista
+      tags:
+        - Products
+      parameters:
+        - name: limit
+          in: query
+          description: Número de productos a obtener
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: page
+          in: query
+          description: Página de productos a obtener
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Los productos fueron obtenidos satisfactoriamente de la base de datos
+        "400":
+          description: Error de solicitud incorrecta, puede ser debido a parámetros inválidos
+        "500":
+          description: Error del servidor al tratar de obtener los productos
+    post:
+      security:
+        - CookieAuth: []
+      summary: Crea un nuevo producto
+      tags:
+        - Products
+      parameters:
+          schema:
+            type: string
+          required: true
+          description: Token de autenticación del usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        "201":
+          description: El producto fue creado satisfactoriamente
+        "400":
+          description: Error de solicitud incorrecta, puede ser debido a parámetros inválidos o producto ya existente
+        "500":
+          description: Error del servidor al tratar de crear el producto
+
+  /api/products/{pid}:
+    get:
+      summary: Obtiene un producto por ID
+      tags:
+        - Products
+      parameters:
+        - name: pid
+          in: path
+          description: ID del producto a obtener
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: El producto fue obtenido satisfactoriamente de la base de datos
+        "400":
+          description: Error de solicitud incorrecta, puede ser debido a un ID de producto inválido
+        "500":
+          description: Error del servidor al tratar de obtener el producto
+    put:
+      summary: Actualiza un producto existente
+      tags:
+        - Products
+      parameters:
+        - name: pid
+          in: path
+          description: ID del producto a actualizar
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Token de autenticación del usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        "200":
+          description: El producto fue actualizado satisfactoriamente
+        "400":
+          description: Error de solicitud incorrecta, puede ser debido a parámetros inválidos
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error del servidor al tratar de actualizar el producto
+    delete:
+      summary: Elimina un producto existente
+      tags:
+        - Products
+      parameters:
+        - name: pid
+          in: path
+          description: ID del producto a eliminar
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Token de autenticación del usuario
+      responses:
+        "200":
+          description: El producto fue eliminado satisfactoriamente
+        "400":
+          description: No tiene permisos para realizar esta acción
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error del servidor al tratar de eliminar el producto
+    

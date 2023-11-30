@@ -21,6 +21,9 @@ import compression from "express-compression";
 import errorHandler from "./services/errors/middlewares.js";
 import { logger, addLogger } from "./config/logger.config.js";
 import loggerRouter from "./routes/logger.router.js";
+import { swaggerOptions } from "./config/swagger.config.js";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUiExpress from "swagger-ui-express";
 
 const app = express();
 app.use(cookieParser());
@@ -51,6 +54,10 @@ server.listen(PORT, () => {
 export const socket = io.on("connection", (socket) => {
     logger.info(`Un cliente se ha conectado`);
 });
+
+//Config Swagger
+const specs = swaggerJSDoc(swaggerOptions);
+app.use("/apidocs", swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
 
 //Config Express
 app.use(express.json());
