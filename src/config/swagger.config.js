@@ -6,7 +6,7 @@ export const swaggerOptions = {
         info: {
             title: "Documentación proyecto Ecommerce Backend",
             description:
-                "API para un Ecommerce. Deberás autenticarte con el token recibido en la cookie llamada 'token' que se define al iniciar sesión en la API para recibir autorización a ciertos endpoints.",
+                "Para acceder a los endpoints privados debe proporcionar el token que recibe al iniciar sesión.",
         },
     },
     apis: [`${__dirname}/docs/**/*.yaml`],

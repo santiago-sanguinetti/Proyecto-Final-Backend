@@ -37,6 +37,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Cart'
+            examples:
+              newCart:
+                summary: Ejemplo de solicitud para crear un nuevo carrito
+                value:
+                  products: 
+                    - _id: "60d21bbf6947g3c5a9426d68"
+                      quantity: 2
+                    - _id: "60d21bbf6947g3c5a9426d69"
+                      quantity: 1
       responses:
         "201":
           description: El carrito fue creado satisfactoriamente
@@ -46,7 +55,9 @@ paths:
           description: Error del servidor al tratar de crear el carrito
   /api/carts/{cid}/product/{pid}:
     post:
-      summary: Agrega un producto al carrito
+      security:
+        - BearerAuth: []
+      summary: Agrega un producto al carrito - Requiere rol usuario o premium
       tags:
         - Carts
       parameters:
@@ -56,23 +67,27 @@ paths:
           required: true
           schema:
             type: string
+          examples:
+            validCartId:
+              summary: Ejemplo de un ID de carrito válido
+              value: "60d21bbf6947g3c5a9426d68"
         - name: pid
           in: path
           description: ID del producto a agregar
           required: true
           schema:
             type: string
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
-          description: Token de autenticación del usuario
+          examples:
+            validProductId:
+              summary: Ejemplo de un ID de producto válido
+              value: "60d21bbf6947g3c5a9426d69"
       responses:
         "200":
           description: El producto fue agregado al carrito satisfactoriamente
         "400":
           description: Error de solicitud incorrecta, puede ser debido a parámetros inválidos o producto ya existente
+        "401":
+          description: Error de autorización, debe proporcionar un token valido y tener el rol indicado
         "404":
           description: Carrito o producto no encontrado
         "500":
@@ -104,6 +119,11 @@ paths:
                 quantity:
                   type: integer
                   format: int32
+            examples:
+              updateProductQuantity:
+                summary: Ejemplo de solicitud para actualizar la cantidad de un producto en el carrito
+                value:
+                  quantity: 3
       responses:
         "200":
           description: La cantidad del producto en el carrito fue actualizada satisfactoriamente
@@ -124,12 +144,21 @@ paths:
           required: true
           schema:
             type: string
+          examples:
+            validCartId:
+              summary: Ejemplo de un ID de carrito válido para eliminar un producto
+              value: "60d21bbf6947g3c5a9426d68"
         - name: pid
           in: path
           description: ID del producto a eliminar
           required: true
           schema:
             type: string
+          examples:
+            validProductId:
+              summary: Ejemplo de un ID de producto válido para eliminar
+              value: "60d21bbf6947g3c5a9426d69"
+          
       responses:
         "200":
           description: El producto fue eliminado del carrito satisfactoriamente
@@ -139,6 +168,8 @@ paths:
           description: Error del servidor al tratar de eliminar el producto del carrito
   /api/carts/{cid}/purchase:
     post:
+      security:
+        - BearerAuth: []
       summary: Completa la compra de un carrito
       tags:
         - Carts
@@ -149,17 +180,17 @@ paths:
           required: true
           schema:
             type: string
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
-          description: Token de autenticación del usuario
+          examples:
+            validCartId:
+              summary: Ejemplo de un ID de carrito válido para completar la compra
+              value: "60d21bbf6947g3c5a9426d68"
       responses:
         "200":
           description: La compra fue completada satisfactoriamente
         "400":
           description: Error de solicitud incorrecta, puede ser debido a parámetros inválidos o producto ya existente
+        "401":
+          description: Error de autorización, debe proporcionar un token valido y tener el rol indicado
         "404":
           description: Carrito no encontrado
         "409":
@@ -178,6 +209,10 @@ paths:
           required: true
           schema:
             type: string
+          examples:
+            validCartId:
+              summary: Ejemplo de un ID de carrito válido
+              value: "60d21bbf6947g3c5a9426d68"
       responses:
         "200":
           description: El carrito fue obtenido satisfactoriamente
@@ -213,6 +248,15 @@ paths:
                       quantity:
                         type: integer
                         format: int32
+            examples:
+              updateCart:
+                summary: Ejemplo de solicitud para actualizar un carrito
+                value:
+                  products: 
+                    - productId: "60d21bbf6947g3c5a9426d68"
+                      quantity: 2
+                    - productId: "60d21bbf6947g3c5a9426d69"
+                      quantity: 1
       responses:
         "200":
           description: El carrito fue actualizado satisfactoriamente
@@ -233,6 +277,10 @@ paths:
           required: true
           schema:
             type: string
+          examples:
+            validCartId:
+              summary: Ejemplo de un ID de carrito válido para eliminar todos los productos
+              value: "60d21bbf6947g3c5a9426d68"
       responses:
         "200":
           description: Todos los productos fueron eliminados del carrito satisfactoriamente

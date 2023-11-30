@@ -1,9 +1,9 @@
 components:
   securitySchemes:
-    CookieAuth:
-      type: JWT
-      in: cookie
-      name: token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
   schemas:
     Product:
@@ -12,7 +12,6 @@ components:
         _id:
           type: string
           description: Id autogenerado de Mongo
-          required: true
           unique: true
           readOnly: true
         title:
@@ -77,35 +76,76 @@ paths:
           schema:
             type: integer
             format: int32
+        
       responses:
         "200":
           description: Los productos fueron obtenidos satisfactoriamente de la base de datos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+              examples:
+                products:
+                  summary: Ejemplo de respuesta exitosa
+                  value:
+                    - _id: "60d21bbf6947g3c5a9426d68"
+                      title: "Producto 1"
+                      description: "Descripción del producto 1"
+                      code: "P1"
+                      price: 100.0
+                      status: true
+                      stock: 10
+                      category: "Categoría 1"
+                      thumbnails: ["http://example.com/image1.jpg"]
+                      owner: "admin"
+                    - _id: "60d21bbf6947g3c5a9426d69"
+                      title: "Producto 2"
+                      description: "Descripción del producto 2"
+                      code: "P2"
+                      price: 200.0
+                      status: false
+                      stock: 0
+                      category: "Categoría 2"
+                      thumbnails: ["http://example.com/image2.jpg"]
+                      owner: "admin"
         "400":
           description: Error de solicitud incorrecta, puede ser debido a parámetros inválidos
         "500":
           description: Error del servidor al tratar de obtener los productos
     post:
       security:
-        - CookieAuth: []
-      summary: Crea un nuevo producto
+        - BearerAuth: []
+      summary: Crea un nuevo producto - Requiere rol premium o admin
       tags:
         - Products
-      parameters:
-          schema:
-            type: string
-          required: true
-          description: Token de autenticación del usuario
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Product'
+            examples:
+              newProduct:
+                summary: Ejemplo de solicitud para crear un nuevo producto
+                value:
+                  title: "Producto 3"
+                  description: "Descripción del producto 3"
+                  code: "P3"
+                  price: 300.0
+                  status: true
+                  stock: 30
+                  category: "Categoría 3"
+                  thumbnails: ["http://example.com/image3.jpg"]
+
       responses:
         "201":
           description: El producto fue creado satisfactoriamente
         "400":
           description: Error de solicitud incorrecta, puede ser debido a parámetros inválidos o producto ya existente
+        "401":
+          description: Error de autorización, debe proporcionar un token valido y tener el rol indicado
         "500":
           description: Error del servidor al tratar de crear el producto
 
@@ -121,6 +161,10 @@ paths:
           required: true
           schema:
             type: string
+          examples:
+            validId:
+              summary: Ejemplo de un ID de producto válido
+              value: "60d21bbf6947g3c5a9426d68"
       responses:
         "200":
           description: El producto fue obtenido satisfactoriamente de la base de datos
@@ -129,7 +173,9 @@ paths:
         "500":
           description: Error del servidor al tratar de obtener el producto
     put:
-      summary: Actualiza un producto existente
+      security:
+        - BearerAuth: []
+      summary: Actualiza un producto existente - Requiere rol admin
       tags:
         - Products
       parameters:
@@ -139,29 +185,39 @@ paths:
           required: true
           schema:
             type: string
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
-          description: Token de autenticación del usuario
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Product'
+            examples:
+              updateProduct:
+                summary: Ejemplo de solicitud para actualizar un producto existente
+                value:
+                  title: "Producto actualizado"
+                  description: "Descripción actualizada del producto"
+                  code: "P1"
+                  price: 150.0
+                  status: false
+                  stock: 5
+                  category: "Categoría actualizada"
+                  thumbnails: ["http://example.com/image_updated.jpg"]
       responses:
         "200":
           description: El producto fue actualizado satisfactoriamente
         "400":
           description: Error de solicitud incorrecta, puede ser debido a parámetros inválidos
+        "401":
+          description: Error de autorización, debe proporcionar un token valido y tener el rol indicado
         "404":
           description: Producto no encontrado
         "500":
           description: Error del servidor al tratar de actualizar el producto
     delete:
-      summary: Elimina un producto existente
+      security:
+        - BearerAuth: []
+      summary: Elimina un producto existente - Requiere rol premium o admin
       tags:
         - Products
       parameters:
@@ -171,17 +227,17 @@ paths:
           required: true
           schema:
             type: string
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
-          description: Token de autenticación del usuario
+          examples:
+            validId:
+              summary: Ejemplo de un ID de producto válido para eliminar
+              value: "60d21bbf6947g3c5a9426d68"
       responses:
         "200":
           description: El producto fue eliminado satisfactoriamente
         "400":
           description: No tiene permisos para realizar esta acción
+        "401":
+          description: Error de autorización, debe proporcionar un token valido y tener el rol indicado
         "404":
           description: Producto no encontrado
         "500":
