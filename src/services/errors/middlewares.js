@@ -13,7 +13,7 @@ export default (error, req, res, next) => {
             httpStatusCode = 400;
             break;
         case EErrors.INSUFFICIENT_STOCK_ERROR:
-            httpStatusCode = 400;
+            httpStatusCode = 409;
             break;
         case EErrors.NOT_FOUND_ERROR:
             httpStatusCode = 404;
