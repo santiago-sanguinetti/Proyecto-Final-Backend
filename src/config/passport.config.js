@@ -25,6 +25,7 @@ opts.jwtFromRequest = (req) => {
     }
     return token;
 };
+
 opts.secretOrKey = dotenvConfig.tokenSecret;
 
 const initializePassport = () => {
