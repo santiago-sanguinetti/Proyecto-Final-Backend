@@ -6,9 +6,10 @@ import bcrypt from "bcrypt";
 import { adminUser, isAdmin } from "./admin.config.js";
 import { cartModel } from "../dao/models/carts.model.js";
 import { dotenvConfig } from "./dotenv.config.js";
-import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
+import { Strategy as JwtStrategy } from "passport-jwt";
 import Users from "../dao/managers/users.manager.js";
 import { logger } from "./logger.config.js";
+
 const LocalStrategy = local.Strategy;
 const sessionsManager = new Users();
 
@@ -24,7 +25,7 @@ opts.jwtFromRequest = (req) => {
     }
     return token;
 };
-opts.secretOrKey = "top_secret";
+opts.secretOrKey = dotenvConfig.tokenSecret;
 
 const initializePassport = () => {
     passport.use(
