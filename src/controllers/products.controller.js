@@ -304,7 +304,7 @@ export const deleteProductById = async (req, res, next) => {
             return next(error);
         }
 
-        const userId = req.user._id; // El usuario admin devuelve undefined
+        let userId = req.user._id; // El usuario admin devuelve undefined
         if (userId) userId = userId.toString();
         const userIsOwner = product.owner === userId;
 
