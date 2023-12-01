@@ -54,3 +54,11 @@ export const saveResetTokenError = () => {
 export const invalidEmailError = () => {
     return `No se recibió un email, o el email es inválido`;
 };
+
+export const tokenNotReceived = () => {
+    return `Se debe ingresar un token`;
+};
+
+export const invalidToken = () => {
+    return `El token ingresado no es válido o expiró`;
+};

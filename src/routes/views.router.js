@@ -4,7 +4,7 @@ import {
     getRealtimeProducts,
     showCart,
 } from "../controllers/views.controller.js";
-import { isAuthenticated } from "../auth/middlewares.js";
+import { verifyToken } from "../auth/middlewares.js";
 
 const router = Router();
 
@@ -14,9 +14,9 @@ router.get("/", async (req, res) => {
 
 router.get("/realtimeproducts", getRealtimeProducts);
 
-router.get("/products", isAuthenticated, getAllProducts);
+router.get("/products", verifyToken, getAllProducts);
 
-router.get("/cart", isAuthenticated, showCart);
+router.get("/cart", verifyToken, showCart);
 
 //-------------------- Login --------------------
 router.get("/login", (req, res) => {
@@ -27,11 +27,11 @@ router.get("/register", (req, res) => {
     res.render("register");
 });
 
-router.get("/profile", isAuthenticated, (req, res) => {
+router.get("/profile", verifyToken, (req, res) => {
     res.render("profile", { user: req.session.user });
 });
 
-router.post("/logout", isAuthenticated, (req, res) => {
+router.post("/logout", verifyToken, (req, res) => {
     req.session.destroy();
     res.redirect("/login");
 });

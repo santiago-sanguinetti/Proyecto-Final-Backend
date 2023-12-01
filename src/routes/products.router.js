@@ -6,7 +6,7 @@ import {
     getProductById,
     updateProduct,
 } from "../controllers/products.controller.js";
-import { hasRole, isAuthenticated } from "../auth/middlewares.js";
+import { hasRole, verifyToken } from "../auth/middlewares.js";
 
 const router = express.Router();
 
@@ -15,13 +15,13 @@ router.get("/", getAllProducts);
 //Buscar un producto por id
 router.get("/:pid", getProductById);
 //Crear un producto
-router.post("/", isAuthenticated, hasRole("premium", "admin"), createProduct);
+router.post("/", verifyToken, hasRole("premium", "admin"), createProduct);
 //Actualizar un producto
-router.put("/:pid", isAuthenticated, hasRole("admin"), updateProduct);
+router.put("/:pid", verifyToken, hasRole("admin"), updateProduct);
 //Eliminar un producto
 router.delete(
     "/:pid",
-    isAuthenticated,
+    verifyToken,
     hasRole("premium", "admin"),
     deleteProductById
 );

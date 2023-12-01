@@ -6,17 +6,20 @@ export default (error, req, res, next) => {
         case EErrors.INVALID_TYPES_ERROR:
             httpStatusCode = 400;
             break;
-        case EErrors.DATABASE_ERROR:
-            httpStatusCode = 500;
-            break;
         case EErrors.EMPTY_CART_ERROR:
             httpStatusCode = 400;
+            break;
+        case EErrors.AUTHENTICATION_ERROR:
+            httpStatusCode = 401;
+            break;
+        case EErrors.NOT_FOUND_ERROR:
+            httpStatusCode = 404;
             break;
         case EErrors.INSUFFICIENT_STOCK_ERROR:
             httpStatusCode = 409;
             break;
-        case EErrors.NOT_FOUND_ERROR:
-            httpStatusCode = 404;
+        case EErrors.DATABASE_ERROR:
+            httpStatusCode = 500;
             break;
         default:
             httpStatusCode = 500;

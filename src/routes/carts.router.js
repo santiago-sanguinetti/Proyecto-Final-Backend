@@ -9,7 +9,7 @@ import {
     updateCartFromArray,
     updateCartProductQuantity,
 } from "../controllers/carts.controller.js";
-import { hasRole, isAuthenticated, isUser } from "../auth/middlewares.js";
+import { hasRole, verifyToken } from "../auth/middlewares.js";
 
 const router = express.Router();
 
@@ -18,12 +18,12 @@ router.post("/", createCart);
 //Agregar un producto al carrito seleccionado
 router.post(
     "/:cid/product/:pid",
-    isAuthenticated,
+    verifyToken,
     hasRole("usuario", "premium"),
     addProductToCart
 );
 //Finalizar la compra
-router.post("/:cid/purchase", isAuthenticated, completePurchase);
+router.post("/:cid/purchase", verifyToken, completePurchase);
 
 //Obtener un carrito por su id
 router.get("/:cid", getCartById);

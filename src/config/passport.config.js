@@ -16,8 +16,11 @@ const opts = {};
 opts.jwtFromRequest = (req) => {
     let token = null;
 
-    if (req && req.cookies) {
-        token = req.cookies["token"];
+    if (req && req.headers.authorization) {
+        const bearer = req.headers.authorization.split(" ");
+        if (bearer.length === 2 && bearer[0].toLowerCase() === "bearer") {
+            token = bearer[1];
+        }
     }
     return token;
 };

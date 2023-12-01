@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "passport";
-import { isAuthenticated, authenticate } from "../auth/middlewares.js";
+import { verifyToken, authenticate } from "../auth/middlewares.js";
 import {
     forgotPassword,
     resetPassword,
@@ -20,12 +20,10 @@ router.post(
 
 router.post("/login", authenticate);
 
-router.post("/logout", isAuthenticated, (req, res) => {
+router.post("/logout", verifyToken, (req, res) => {
     res.clearCookie("token");
     req.logout();
     req.session.destroy();
-
-    // res.redirect("/login");
 });
 
 router.post("/forgot-my-password", forgotPassword);
@@ -47,7 +45,7 @@ router.get(
     }
 );
 
-router.get("/current", isAuthenticated, (req, res) => {
+router.get("/current", verifyToken, (req, res) => {
     res.json({
         message: "Autenticado correctamente",
         user: req.user,
