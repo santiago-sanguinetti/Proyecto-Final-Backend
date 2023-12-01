@@ -9,6 +9,8 @@ import { dotenvConfig } from "./dotenv.config.js";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import Users from "../dao/managers/users.manager.js";
 import { logger } from "./logger.config.js";
+import dotenvConfig from "dotenv";
+
 const LocalStrategy = local.Strategy;
 const sessionsManager = new Users();
 
@@ -24,7 +26,7 @@ opts.jwtFromRequest = (req) => {
     }
     return token;
 };
-opts.secretOrKey = "top_secret";
+opts.secretOrKey = dotenvConfig.tokenSecret;
 
 const initializePassport = () => {
     passport.use(
