@@ -18,4 +18,6 @@ export const dotenvConfig = {
     loggerLevel: process.env.LOGGER_LEVEL,
     mailUser: process.env.MAIL_USER,
     mailPass: process.env.MAIL_PASS,
+    testUser: process.env.TEST_USER,
+    testPassword: process.env.TEST_PASSWORD,
 };
