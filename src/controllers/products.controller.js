@@ -16,19 +16,20 @@ const productsManager = new productManager();
 // Mostrar todos los productos
 export const getAllApiProducts = async (req, res, next) => {
     logger.info("Obteniendo todos los productos de la API");
-    const limit = parseInt(req.query.limit) || 10; // Si no se proporciona un límite, se establece un valor predeterminado
+    const limit = Number(req.query.limit) || 10; // Si no se proporciona un límite, se establece un valor predeterminado
     const page = Number(req.query.page) || 1;
-    const sort = req.query.sort;
+    const sort = req.query.sort || "desc";
     const query = req.query.query;
 
+    // Valida los parámetros que podrían generar un error
     if (
-        // Valida los parámetros que podrían generar un error
         isNaN(limit) ||
         limit < 0 ||
         isNaN(page) ||
         page < 0 ||
         typeof sort !== "string" ||
-        (sort !== "asc" && sort !== "desc")
+        (sort !== "asc" && sort !== "desc") ||
+        (query && typeof query !== "string")
     ) {
         const error = CustomError.createError({
             name: "Parámetros inválidos",
@@ -42,10 +43,10 @@ export const getAllApiProducts = async (req, res, next) => {
         return next(error);
     }
 
-    const sortObject = buildSortObject(sort);
-    const queryObject = buildQueryObject(query);
-
     try {
+        const sortObject = buildSortObject(sort);
+        const queryObject = buildQueryObject(query);
+
         const products = await productsManager.limitGetAll(
             limit,
             page,
@@ -53,6 +54,7 @@ export const getAllApiProducts = async (req, res, next) => {
         );
 
         const totalProducts = await productsManager.countDocuments(queryObject);
+        const totalPages = Math.ceil(totalProducts / limit);
         const prevPage = page > 1 ? page - 1 : null;
         const nextPage = page < totalPages ? page + 1 : null;
 
@@ -162,7 +164,8 @@ export const getProductById = async (req, res, next) => {
             return next(error);
         }
         logger.info("Producto obtenido exitosamente");
-        res.render("home", { products });
+        // res.render("home", { products });
+        res.json(products);
     } catch (err) {
         logger.error(`Error al obtener el producto: ${err.message}`);
         return next(err);

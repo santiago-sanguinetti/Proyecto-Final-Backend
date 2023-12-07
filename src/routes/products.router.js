@@ -2,7 +2,7 @@ import express from "express";
 import {
     createProduct,
     deleteProductById,
-    getAllProducts,
+    getAllApiProducts,
     getProductById,
     updateProduct,
 } from "../controllers/products.controller.js";
@@ -11,7 +11,7 @@ import { hasRole, verifyToken } from "../auth/middlewares.js";
 const router = express.Router();
 
 //Mostrar todos los productos,
-router.get("/", getAllProducts);
+router.get("/", getAllApiProducts);
 //Buscar un producto por id
 router.get("/:pid", getProductById);
 //Crear un producto

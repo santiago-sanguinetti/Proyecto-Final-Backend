@@ -49,7 +49,6 @@ router.get("/current", verifyToken, (req, res) => {
     res.json({
         message: "Autenticado correctamente",
         user: req.user,
-        token: req.cookies.token,
     });
 });
 

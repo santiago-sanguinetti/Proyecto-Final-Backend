@@ -101,7 +101,7 @@ export const swapUserRole = async (req, res, next) => {
     if (!user) {
         return res.status(404).send({ message: "Usuario no encontrado" });
     }
-    user.role = user.role === "user" ? "premium" : "user";
+    user.role = user.role === "usuario" ? "premium" : "usuario";
     usersManager.updateRole(user);
     res.send(user);
 };
