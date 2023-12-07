@@ -5,6 +5,7 @@
 El proyecto ahora incluye las siguientes funcionalidades:
 
 - La API ahora cuenta con módulos de testing
+  - Puedes correr los tests con el comando `mocha test` luego de iniciar el servidor
 
 ## Correcciones y cambios menores
 
