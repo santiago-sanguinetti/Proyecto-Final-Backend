@@ -22,21 +22,13 @@ const customLevelOptions = {
     },
 };
 
-const prettyJson = winston.format.printf((info) => {
-    if (info.message.constructor === Object) {
-        info.message = JSON.stringify(info.message, null, 4);
-    }
-    return `${info.level}: ${info.message}`;
-});
-
 const errorLogPath = path.join(__dirname, "./services/errors/errors.log");
 
 const consoleFormat = winston.format.combine(
     winston.format.colorize({ colors: customLevelOptions.colors }),
     winston.format.printf(({ level, message }) => {
         return `[${new Date().toLocaleTimeString()}] ${level}: ${message}`;
-    }),
-    prettyJson
+    })
 );
 
 const fileFormat = winston.format.printf(({ level, message }) => {
