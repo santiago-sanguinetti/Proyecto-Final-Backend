@@ -5,7 +5,13 @@ import {
     forgotPassword,
     resetPassword,
     swapUserRole,
+    updateUserStatus,
+    uploadDocuments,
 } from "../controllers/users.controller.js";
+import userManager from "../dao/managers/users.manager.js";
+import { upload } from "../config/multer.config.js";
+
+const usersManager = new userManager();
 
 const router = express.Router();
 
@@ -21,9 +27,10 @@ router.post(
 router.post("/login", authenticate);
 
 router.post("/logout", verifyToken, (req, res) => {
+    usersManager.updateLastConnection(req.user);
     res.clearCookie("token");
-    req.logout();
     req.session.destroy();
+    res.redirect("/");
 });
 
 router.post("/forgot-my-password", forgotPassword);
@@ -53,5 +60,12 @@ router.get("/current", verifyToken, (req, res) => {
 });
 
 router.put("/premium/:uid", swapUserRole);
+
+router.post(
+    "/:uid/documents",
+    upload.array("files"),
+    uploadDocuments,
+    updateUserStatus
+);
 
 export default router;

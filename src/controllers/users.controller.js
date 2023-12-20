@@ -9,6 +9,7 @@ import {
 } from "../services/errors/info.js";
 import { sendRecoveryMail } from "../services/mailer.js";
 import bcrypt from "bcrypt";
+import { logger } from "../config/logger.config.js";
 
 const usersManager = new userManager();
 
@@ -101,7 +102,58 @@ export const swapUserRole = async (req, res, next) => {
     if (!user) {
         return res.status(404).send({ message: "Usuario no encontrado" });
     }
+
+    // Verifica si existe al menos un documento de cada tipo requerido
+    const requiredTypes = ["profile", "product", "document"];
+    for (const type of requiredTypes) {
+        const doc = user.documents.find((doc) => doc.name.startsWith(type));
+        if (!doc) {
+            return res
+                .status(400)
+                .send(
+                    `El usuario debe cargar al menos un documento de tipo ${type} antes de poder convertirse en premium`
+                );
+        }
+    }
+
+    // Si todos los tipos de documentos existen, actualiza el rol del usuario
     user.role = user.role === "usuario" ? "premium" : "usuario";
     usersManager.updateRole(user);
     res.send(user);
+};
+
+export const updateUserStatus = async (req, res, next) => {
+    try {
+        if (!req.user) {
+            return res.status(404).send({ message: "Usuario no encontrado" });
+        }
+        usersManager.updateUserStatus(req.user);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const uploadDocuments = async (req, res, next) => {
+    try {
+        const user = await usersManager.getBy({ _id: req.params.uid });
+        if (!user) {
+            return res.status(404).send("Usuario no encontrado");
+        }
+
+        // Itera sobre cada archivo cargado y lo añade al array de documentos del usuario
+        req.files.forEach((file) => {
+            const document = {
+                name: file.filename,
+                reference: file.path,
+            };
+            user.documents.push(document);
+        });
+
+        // Guarda el usuario actualizado en la base de datos
+        await usersManager.save(user);
+
+        res.status(200).send("Documentos cargados con éxito");
+    } catch (error) {
+        return next(error);
+    }
 };
