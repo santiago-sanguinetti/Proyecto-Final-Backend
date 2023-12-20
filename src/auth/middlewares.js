@@ -6,7 +6,10 @@ import CustomError from "../services/errors/CustomError.js";
 import { tokenNotReceived, invalidToken } from "../services/errors/info.js";
 import EErrors from "../services/errors/enums.js";
 import { logger } from "../config/logger.config.js";
+import userManager from "../dao/managers/users.manager.js";
 const tokenSecret = dotenvConfig.tokenSecret;
+
+const usersManager = new userManager();
 
 export const verifyToken = (req, res, next) => {
     logger.info("Verificando el token del usuario");
@@ -108,6 +111,8 @@ export const authenticate = async (req, res, next) => {
                 });
 
                 res.status(200).json({ token });
+
+                usersManager.updateLastConnection(user);
 
                 logger.info("Usuario autenticado exitosamente");
             });
