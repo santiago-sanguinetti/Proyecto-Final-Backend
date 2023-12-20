@@ -59,15 +59,13 @@ describe("Testing módulo sesiones", () => {
     });
 
     describe("Test 4: Cambiar rol del usuario", () => {
-        it("El endpoint PUT /premium/:uid debe cambiar el rol del usuario entre usuario y premium", async () => {
+        it("El endpoint PUT /premium/:uid NO debe cambiar el rol del usuario entre usuario y premium por falta de documentación", async () => {
             let { statusCode, ok, body } = await requester
                 .put(`/api/sessions/premium/${uid}`)
                 .send();
 
-            expect(body)
-                .to.have.property("role")
-                .that.is.an("string")
-                .equal("premium");
+            expect(ok).to.be.false;
+            expect(statusCode).to.be.equal(400);
         });
     });
 });
