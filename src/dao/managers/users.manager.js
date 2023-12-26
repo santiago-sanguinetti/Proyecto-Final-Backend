@@ -74,7 +74,20 @@ export default class Users {
     };
 
     getBy = async (params) => {
-        return await userModel.findOne(params).lean();
+        const acceptedParams = ["_id", "email", "passwordResetToken"];
+        let query = {};
+
+        try {
+            for (let key in params) {
+                if (acceptedParams.includes(key)) {
+                    query[key] = params[key];
+                }
+            }
+
+            return await userModel.findOne(params).lean();
+        } catch (error) {
+            throw error;
+        }
     };
 
     updateRole = async (user) => {

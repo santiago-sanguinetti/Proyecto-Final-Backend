@@ -17,7 +17,20 @@ export default class Tickets {
     };
 
     getBy = async (params) => {
-        return await ticketModel.findOne(params).lean();
+        const acceptedParams = ["_id"];
+        let query = {};
+
+        try {
+            for (let key in params) {
+                if (acceptedParams.includes(key)) {
+                    query[key] = params[key];
+                }
+            }
+
+            return await ticketModel.findOne(params).lean();
+        } catch (error) {
+            throw error;
+        }
     };
 
     deleteById = async (id) => {

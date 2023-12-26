@@ -23,7 +23,20 @@ export default class Products {
     };
 
     getBy = async (params) => {
-        return await productModel.findOne(params).lean();
+        const acceptedParams = ["_id"];
+        let query = {};
+
+        try {
+            for (let key in params) {
+                if (acceptedParams.includes(key)) {
+                    query[key] = params[key];
+                }
+            }
+
+            return await productModel.findOne(params).lean();
+        } catch (error) {
+            throw error;
+        }
     };
 
     deleteById = async (id) => {

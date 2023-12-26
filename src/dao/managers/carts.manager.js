@@ -25,7 +25,20 @@ export default class Carts {
     };
 
     getBy = async (params) => {
-        return await cartModel.findOne(params); //lean() para convertirlo en object de js
+        const acceptedParams = ["_id"];
+        let query = {};
+
+        try {
+            for (let key in params) {
+                if (acceptedParams.includes(key)) {
+                    query[key] = params[key];
+                }
+            }
+
+            return await cartModel.findOne(params); //lean() para convertirlo en object de js
+        } catch (error) {
+            throw error;
+        }
     };
 
     populateProducts = async (cart) => {
