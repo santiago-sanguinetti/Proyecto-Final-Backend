@@ -3,7 +3,11 @@ import jwt from "jsonwebtoken";
 import UserDTO from "../dao/DTOs/user.dto.js";
 import { dotenvConfig } from "../config/dotenv.config.js";
 import CustomError from "../services/errors/CustomError.js";
-import { tokenNotReceived, invalidToken } from "../services/errors/info.js";
+import {
+    tokenNotReceived,
+    invalidToken,
+    passportAuthenticateError,
+} from "../services/errors/info.js";
 import EErrors from "../services/errors/enums.js";
 import { logger } from "../config/logger.config.js";
 import userManager from "../dao/managers/users.manager.js";
