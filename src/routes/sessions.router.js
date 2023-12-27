@@ -7,6 +7,7 @@ import {
     swapUserRole,
     updateUserStatus,
     uploadDocuments,
+    getAllUsers,
 } from "../controllers/users.controller.js";
 import userManager from "../dao/managers/users.manager.js";
 import { upload } from "../config/multer.config.js";
@@ -14,6 +15,8 @@ import { upload } from "../config/multer.config.js";
 const usersManager = new userManager();
 
 const router = express.Router();
+
+router.get("/", getAllUsers);
 
 router.post(
     "/register",

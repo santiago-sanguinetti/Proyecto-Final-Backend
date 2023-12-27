@@ -9,7 +9,7 @@ import {
 } from "../services/errors/info.js";
 import { sendRecoveryMail } from "../services/mailer.js";
 import bcrypt from "bcrypt";
-import { logger } from "../config/logger.config.js";
+import UserDTO from "../dao/DTOs/user.dto.js";
 
 const usersManager = new userManager();
 
@@ -154,6 +154,23 @@ export const uploadDocuments = async (req, res, next) => {
 
         res.status(200).send("Documentos cargados con éxito");
     } catch (error) {
+        return next(error);
+    }
+};
+
+// Middleware para obtener todos los usuarios
+export const getAllUsers = async (req, res, next) => {
+    try {
+        // Obtiene todos los usuarios
+        const users = await usersManager.getAll();
+
+        // Convierte cada usuario a un objeto y luego a una instancia de UserDTO
+        const userDTOs = users.map((user) => new UserDTO(user));
+
+        // Devuelve un JSON con los UserDTOs
+        res.json(userDTOs);
+    } catch (error) {
+        // Maneja el error
         return next(error);
     }
 };
