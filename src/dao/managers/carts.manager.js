@@ -43,7 +43,8 @@ export default class Carts {
 
     populateProducts = async (cart) => {
         try {
-            return await cart.populate("products");
+            await cart.populate("products.productId");
+            return cart.toObject();
         } catch (error) {
             throw error;
         }
@@ -54,6 +55,19 @@ export default class Carts {
             const updatedCart = await cartModel.findByIdAndUpdate(
                 cart._id,
                 cart,
+                { new: true }
+            );
+            return updatedCart;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    emptyCart = async (cartId) => {
+        try {
+            const updatedCart = await cartModel.findByIdAndUpdate(
+                cartId,
+                { products: [] },
                 { new: true }
             );
             return updatedCart;
