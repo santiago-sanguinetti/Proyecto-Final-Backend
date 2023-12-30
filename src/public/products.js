@@ -1,8 +1,6 @@
-function agregarAlCarrito(event, productId) {
+function agregarAlCarrito(event, productId, cartId) {
     event.preventDefault();
-
-    //Cambiar luego a :cid
-    fetch(`/api/carts/650a07c3860aebb9f03b2e69/product/${productId}`, {
+    fetch(`/api/carts/${cartId}/product/${productId}`, {
         method: "POST",
     })
         .then((response) => {
