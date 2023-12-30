@@ -73,9 +73,7 @@ describe("Testing módulo productos", () => {
                 .set("Authorization", `Bearer ${token}`)
                 .send();
 
-            expect(body)
-                .to.have.property("message")
-                .that.is.equal("Producto eliminado");
+            expect(statusCode).to.be.equal(200);
         });
     });
 

@@ -2,6 +2,7 @@ import express from "express";
 import {
     createProduct,
     deleteProductById,
+    emailProductOwner,
     getAllApiProducts,
     getProductById,
     updateProduct,
@@ -23,7 +24,8 @@ router.delete(
     "/:pid",
     verifyToken,
     hasRole("premium", "admin"),
-    deleteProductById
+    deleteProductById,
+    emailProductOwner
 );
 
 export default router;

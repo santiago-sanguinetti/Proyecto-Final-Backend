@@ -1,9 +1,10 @@
 import productManager from "../dao/managers/products.manager.js";
 import cartManager from "../dao/managers/carts.manager.js";
-import { cartModel } from "../dao/models/carts.model.js";
+import userManager from "../dao/managers/users.manager.js";
 
 const productsManager = new productManager();
 const cartsManager = new cartManager();
+const usersManager = new userManager();
 
 export const getRealtimeProducts = async (req, res) => {
     try {
@@ -15,15 +16,12 @@ export const getRealtimeProducts = async (req, res) => {
 };
 
 export const showCart = async (req, res) => {
-    //Por ahora funciona con un solo carrito luego funcionará con :cid
-    const { cid } = req.params;
-
+    const user = await usersManager.getBy({ _id: req.user._id });
+    const cartId = user.cart;
     try {
-        //Esto lo tengo que cambiar al manager cuando quite el cart hardcoded
-        const cart = await cartModel
-            .findById("650a07c3860aebb9f03b2e69") //cid
-            .populate("products.productId")
-            .lean();
+        let cart = await cartsManager.getBy({ _id: user.cart });
+
+        cart = await cartsManager.populateProducts(cart);
         res.render("cart", { cart: cart });
     } catch (err) {
         res.status(500).send(err.message);

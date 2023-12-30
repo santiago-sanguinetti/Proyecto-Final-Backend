@@ -92,3 +92,48 @@ export const sendAccountDeletionEmail = async (userEmail) => {
     );
     return;
 };
+
+export const sendProductDeletionEmail = async (userEmail) => {
+    if (!dotenvConfig.mailUser || !dotenvConfig.mailPass) {
+        logger.warning(
+            `Ingrese a las variables de entorno para configurar un email y contraseña`
+        );
+        return res
+            .status(404)
+            .send(
+                "Ingrese a las variables de entorno para configurar un email y contraseña"
+            );
+    }
+
+    logger.info("Enviando un e-mail");
+    let mail = await transporter.sendMail(
+        {
+            from: dotenvConfig.mailUser,
+            to: userEmail,
+            subject: "Su producto ha sido eliminado",
+            html: `
+            <html>
+            <head>
+                <title>Su producto ha sido eliminado</title>
+            </head>
+            <body>
+                <p>Hola,</p>
+                <p>Queremos informarte que tu producto ha sido eliminado.</p>
+                <p>Si crees que esto es un error, por favor responde a este email.</p>
+                <p></p>
+                <p>Saludos,</p>
+                <p>Santiago Sanguinetti</p>
+            </body>
+        </html>
+            `,
+        },
+        (error, info) => {
+            if (error) {
+                logger.error(error);
+            } else {
+                logger.info(`Email enviado: ${info.response}`);
+            }
+        }
+    );
+    return;
+};

@@ -78,15 +78,16 @@ export const addProductToCart = async (req, res, next) => {
         }
 
         // Verifica si el producto pertenece al usuario
-        if (product.owner.toString() === req.user._id.toString()) {
+        if (product.owner === req.user._id.toString()) {
             return res.status(400).send({
                 message: "No puedes agregar tus propios productos al carrito",
             });
         }
 
         const productIndex = cart.products.findIndex(
-            (p) => p && p.productId.toString() === req.params.pid
+            (p) => p && p.productId._id.toString() === req.params.pid
         );
+
         if (productIndex > -1) {
             // Si el producto ya existe en el carrito, incrementa la cantidad
             cart.products[productIndex].quantity += 1;
@@ -153,7 +154,7 @@ export const deleteProductFromCart = async (req, res, next) => {
             return next(error);
         }
         cart.products = cart.products.filter(
-            (product) => product._id.toString() !== pid
+            (product) => product.productId._id.toString() !== pid
         );
         await cartsManager.saveCart(cart);
         logger.info("Producto eliminado del carrito exitosamente");
@@ -229,7 +230,7 @@ export const updateCartProductQuantity = async (req, res, next) => {
         }
 
         const product = cart.products.find(
-            (product) => product._id.toString() === pid
+            (product) => product.productId._id.toString() === pid
         );
         if (product) {
             product.quantity = quantity;
@@ -324,13 +325,13 @@ export const completePurchase = async (req, res, next) => {
         // Obtiene el id del carrito de la solicitud
         const cartId = req.params.cid;
         // Busca el carrito en la base de datos
-        const cart = await cartsManager.getBy({ _id: cartId });
+        let cart = await cartsManager.getBy({ _id: cartId });
         // Inicializa el total de la compra y el array de productos sin stock
         let totalAmount = 0;
         let outOfStockProducts = [];
 
         // Si el carrito está vacío, devuelve un error
-        if (!cart || cart.products[0] === null) {
+        if (!cart || cart.products[0] === undefined) {
             const error = CustomError.createError({
                 name: "Carrito vacío",
                 cause: emptyCart(cart.products),
@@ -382,10 +383,24 @@ export const completePurchase = async (req, res, next) => {
             purchaser: req.user.email,
         };
 
+        cart = await cartsManager.populateProducts(cart);
+
         // Crea un ticket para la compra
         ticketsManager.createPurchaseTicket(purchaseDetails);
         logger.info("Compra finalizada exitosamente");
-        res.status(200).json({ message: "Compra finalizada con éxito" });
+
+        cartsManager.emptyCart(cart);
+        // Verifica el encabezado 'Accept' de la solicitud
+        if (req.headers.accept === "application/json") {
+            // Si el cliente acepta JSON, envía una respuesta JSON
+            res.status(200).json({ message: "Compra finalizada con éxito" });
+        } else {
+            // Si no, renderiza una vista
+            res.render("purchaseDetails", {
+                purchaseDetails: purchaseDetails,
+                cart: cart,
+            });
+        }
     } catch (err) {
         logger.error(`Error al completar la compra: ${err.message}`);
         return next(err);

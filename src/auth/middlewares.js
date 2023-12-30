@@ -47,7 +47,7 @@ export const verifyToken = (req, res, next) => {
         return next(error);
     }
 
-    jwt.verify(token, tokenSecret, (err, credentials) => {
+    jwt.verify(token, tokenSecret, async (err, credentials) => {
         if (err) {
             const error = CustomError.createError({
                 name: "Token no válido",
@@ -59,9 +59,21 @@ export const verifyToken = (req, res, next) => {
             return next(error);
         }
 
+        if (credentials.user.role !== "admin") {
+            const user = await usersManager.getBy({
+                _id: credentials.user._id,
+            });
+            const userDTO = new UserDTO(user);
+
+            req.user = userDTO;
+            req.session.user = userDTO;
+            logger.info("Token verificado con éxito");
+            return next();
+        }
+
         req.user = credentials.user;
         logger.info("Token verificado con éxito");
-        next();
+        return next();
     });
 };
 

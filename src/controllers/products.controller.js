@@ -11,7 +11,10 @@ import {
     getProductByIdErrorInfo,
 } from "../services/errors/info.js";
 import { logger } from "../config/logger.config.js";
+import { sendProductDeletionEmail } from "../services/mailer.js";
+import userManager from "../dao/managers/users.manager.js";
 
+const usersManager = new userManager();
 const productsManager = new productManager();
 // Mostrar todos los productos
 export const getAllApiProducts = async (req, res, next) => {
@@ -307,9 +310,11 @@ export const deleteProductById = async (req, res, next) => {
             return next(error);
         }
 
-        let userId = req.user._id; // El usuario admin devuelve undefined
+        let userId = req.user._id;
         if (userId) userId = userId.toString();
         const userIsOwner = product.owner === userId;
+
+        if (product.owner !== "admin") req.productOwner = product.owner;
 
         if (userIsOwner || req.user.role === "admin") {
             await productsManager.deleteById(req.params.pid);
@@ -318,7 +323,8 @@ export const deleteProductById = async (req, res, next) => {
             socket.emit("product-deleted", req.params.pid);
 
             logger.info("Producto eliminado exitosamente");
-            res.json({ message: "Producto eliminado" });
+            res.status(200);
+            return next();
         } else {
             logger.info(
                 "No se tienen los permisos necesarios para borrar un producto"
@@ -330,6 +336,23 @@ export const deleteProductById = async (req, res, next) => {
     } catch (err) {
         logger.error(`Error al eliminar el producto: ${err.message}`);
         return next(err);
+    }
+};
+
+export const emailProductOwner = async (req, res, next) => {
+    try {
+        if (!req.productOwner) {
+            return next();
+        }
+        const userOwner = await usersManager.getBy({ _id: req.productOwner });
+
+        sendProductDeletionEmail(userOwner.email);
+
+        res.status(200).send(
+            "Email enviado con éxito! El producto se ha eliminado."
+        );
+    } catch (error) {
+        return next(error);
     }
 };
 

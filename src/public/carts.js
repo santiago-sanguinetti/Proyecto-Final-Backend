@@ -1,9 +1,8 @@
-function agregarAlCarrito(event, productId) {
+function deleteFromCart(event, productId, cartId) {
     event.preventDefault();
 
-    //Cambiar luego a :cid
-    fetch(`/api/carts/650a07c3860aebb9f03b2e69/product/${productId}`, {
-        method: "POST",
+    fetch(`/api/carts/${cartId}/products/${productId}`, {
+        method: "DELETE",
     })
         .then((response) => {
             if (!response.ok) {
@@ -13,16 +12,18 @@ function agregarAlCarrito(event, productId) {
         })
         .then((data) => {
             Swal.fire(
-                "¡Producto agregado!",
-                "El producto se ha agregado al carrito con éxito.",
+                "¡Producto eliminado!",
+                "El producto se ha eliminado del carrito con éxito.",
                 "success"
-            );
+            ).then(() => {
+                location.reload(); // Recarga la página
+            });
         })
         .catch((error) => {
             console.error("Error:", error);
             Swal.fire(
                 "¡Error!",
-                "Hubo un problema al agregar el producto al carrito.",
+                "Hubo un problema al eliminar el producto del carrito.",
                 "error"
             );
         });
