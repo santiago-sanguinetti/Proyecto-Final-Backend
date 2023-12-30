@@ -12,10 +12,13 @@ describe("Testing módulo carritos", () => {
     before(async () => {
         try {
             //Este es un usuario premium
-            let res = await requester.post("/api/sessions/login").send({
-                email: env.testUser,
-                password: env.testPassword,
-            });
+            let res = await requester
+                .post("/api/sessions/login")
+                .set("Accept", "application/json")
+                .send({
+                    email: env.testUser,
+                    password: env.testPassword,
+                });
 
             token = res.body.token;
 
