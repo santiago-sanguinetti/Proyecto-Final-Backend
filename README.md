@@ -1,9 +1,9 @@
 # Proyecto Final Backend
 ## Actualización: 30 de Diciembre, 2023
 ### Notas
-La funcionalidad para resetear la contraseña por ahora solo funciona teniendo la app corriendo localmente.
-Los tests funcionan solo si se configura un usuario Premium para los mismos.
-Para probar los endpoints desde Postman o similar se requiere hacer el login y enviar el token recibido como Bearer Token al endpoint, además de enviar `Accept: application/json` en los headers de la solicitud.
+- La funcionalidad para resetear la contraseña por ahora solo funciona teniendo la app corriendo localmente.
+- Los tests funcionan solo si se configura un usuario Premium para los mismos.
+- Para probar los endpoints desde Postman o similar se requiere hacer el login y enviar el token recibido como Bearer Token al endpoint, además de enviar `Accept: application/json` en los headers de la solicitud.
 
 ### Nuevas Funcionalidades
 El proyecto ha sido actualizado con nuevas funcionalidades y algunas correcciones menores.
