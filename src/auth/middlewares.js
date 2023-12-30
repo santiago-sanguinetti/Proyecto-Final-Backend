@@ -18,7 +18,11 @@ const usersManager = new userManager();
 export const verifyToken = (req, res, next) => {
     logger.info("Verificando el token del usuario");
     const authHeader = req.header("Authorization");
-    if (!authHeader) {
+    const authCookie = "";
+
+    if (req.cookies.token) authCookie = req.cookies.token;
+
+    if (!authHeader && !authCookie) {
         const error = CustomError.createError({
             name: "Acceso denegado",
             cause: tokenNotReceived(),
@@ -29,7 +33,8 @@ export const verifyToken = (req, res, next) => {
         return next(error);
     }
 
-    const token = authHeader.split(" ")[1];
+    let token = authCookie;
+    if (authHeader) token = authHeader.split(" ")[1];
 
     if (!token) {
         const error = CustomError.createError({
@@ -114,14 +119,24 @@ export const authenticate = async (req, res, next) => {
                     expiresIn: "1h",
                 });
 
-                res.status(200).json({ token });
-
-                usersManager.updateLastConnection(user);
+                if (user.role !== "admin") {
+                    usersManager.updateLastConnection(user);
+                }
 
                 logger.info("Usuario autenticado exitosamente");
+
+                // Verifica el encabezado 'Accept' de la solicitud
+                if (req.headers.accept === "application/json") {
+                    // Si el cliente acepta JSON, envía una respuesta JSON
+                    res.status(200).json({ token });
+                } else {
+                    // Si no, renderiza una vista
+                    res.cookie("token", token, { httpOnly: true });
+                    res.render("profile", { user: body });
+                }
             });
         } catch (err) {
-            logger.fatal(`Error fatal: ${err}`);
+            logger.error(`Error: ${err}`);
             return next(err);
         }
     })(req, res, next);
