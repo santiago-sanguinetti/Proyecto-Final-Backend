@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "passport";
-import { verifyToken, authenticate } from "../auth/middlewares.js";
+import { verifyToken, authenticate, hasRole } from "../auth/middlewares.js";
 import {
     forgotPassword,
     resetPassword,
@@ -21,10 +21,12 @@ const usersManager = new userManager();
 
 const router = express.Router();
 
-router.get("/", getAllUsers);
+router.get("/", verifyToken, hasRole("admin"), getAllUsers);
 
 router.delete(
     "/",
+    verifyToken,
+    hasRole("admin"),
     getAllInactiveUsersEmail,
     emailInactiveUsers,
     deleteAllInactiveUsers
@@ -42,7 +44,8 @@ router.post(
 router.post("/login", authenticate);
 
 router.post("/logout", verifyToken, (req, res) => {
-    usersManager.updateLastConnection(req.user);
+    if (req.user.role !== "admin") usersManager.updateLastConnection(req.user);
+
     res.clearCookie("token");
     req.session.destroy();
     res.redirect("/");
@@ -61,10 +64,7 @@ router.get(
 router.get(
     "/githubcallback",
     passport.authenticate("github", { failureRedirect: "/login" }),
-    async (req, res) => {
-        req.session.user = req.user;
-        res.redirect("/");
-    }
+    authenticate
 );
 
 router.get("/current", verifyToken, (req, res) => {

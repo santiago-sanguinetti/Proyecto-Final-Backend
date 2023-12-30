@@ -17,64 +17,68 @@ const usersManager = new userManager();
 
 export const verifyToken = (req, res, next) => {
     logger.info("Verificando el token del usuario");
-    const authHeader = req.header("Authorization");
-    let authCookie = "";
+    try {
+        const authHeader = req.header("Authorization");
+        let authCookie = "";
 
-    if (req.cookies.token) authCookie = req.cookies.token;
+        if (req.cookies.token) authCookie = req.cookies.token;
 
-    if (!authHeader && !authCookie) {
-        const error = CustomError.createError({
-            name: "Acceso denegado",
-            cause: tokenNotReceived(),
-            message: "Acceso denegado, se requiere token",
-            code: EErrors.AUTHENTICATION_ERROR,
-        });
-        logger.error(`Error al verificar el token: ${error.message}`);
-        return next(error);
-    }
-
-    let token = authCookie;
-    if (authHeader) token = authHeader.split(" ")[1];
-
-    if (!token) {
-        const error = CustomError.createError({
-            name: "Acceso denegado",
-            cause: tokenNotReceived(),
-            message: "Acceso denegado, se requiere token",
-            code: EErrors.AUTHENTICATION_ERROR,
-        });
-        logger.error(`Error al verificar el token: ${error.message}`);
-        return next(error);
-    }
-
-    jwt.verify(token, tokenSecret, async (err, credentials) => {
-        if (err) {
+        if (!authHeader && !authCookie) {
             const error = CustomError.createError({
-                name: "Token no válido",
-                cause: invalidToken(),
-                message: "Token no válido",
+                name: "Acceso denegado",
+                cause: tokenNotReceived(),
+                message: "Acceso denegado, se requiere token",
                 code: EErrors.AUTHENTICATION_ERROR,
             });
             logger.error(`Error al verificar el token: ${error.message}`);
             return next(error);
         }
 
-        if (credentials.user.role !== "admin") {
-            const user = await usersManager.getBy({
-                _id: credentials.user._id,
-            });
-            const userDTO = new UserDTO(user);
+        let token = authCookie;
+        if (authHeader) token = authHeader.split(" ")[1];
 
-            req.user = userDTO;
-            req.session.user = userDTO;
-            logger.info("Token verificado con éxito");
-            return next();
+        if (!token) {
+            const error = CustomError.createError({
+                name: "Acceso denegado",
+                cause: tokenNotReceived(),
+                message: "Acceso denegado, se requiere token",
+                code: EErrors.AUTHENTICATION_ERROR,
+            });
+            logger.error(`Error al verificar el token: ${error.message}`);
+            return next(error);
         }
 
-        req.user = credentials.user;
-        logger.info("Token verificado con éxito");
-        return next();
-    });
+        jwt.verify(token, tokenSecret, async (err, credentials) => {
+            if (err) {
+                const error = CustomError.createError({
+                    name: "Token no válido",
+                    cause: invalidToken(),
+                    message: "Token no válido",
+                    code: EErrors.AUTHENTICATION_ERROR,
+                });
+                logger.error(`Error al verificar el token: ${error.message}`);
+                return next(error);
+            }
+
+            if (credentials.user.role !== "admin") {
+                const user = await usersManager.getBy({
+                    _id: credentials.user._id,
+                });
+                const userDTO = new UserDTO(user);
+
+                req.user = userDTO;
+                req.session.user = userDTO;
+                logger.info("Token verificado con éxito");
+                return next();
+            }
+
+            req.user = credentials.user;
+            logger.info("Token verificado con éxito");
+            return next();
+        });
+    } catch (error) {
+        return next(error);
+    }
 };
 
 export const hasRole = (...roles) => {
@@ -106,7 +110,9 @@ export const hasRole = (...roles) => {
 
 export const authenticate = async (req, res, next) => {
     logger.info("Autenticando al usuario");
-    passport.authenticate("login", async (err, user, info) => {
+
+    const strategy = req.path.startsWith("/github") ? "github" : "login";
+    passport.authenticate(strategy, async (err, user, info) => {
         try {
             if (err || !user) {
                 logger.error(`Error al autenticar al usuario: ${err}`);

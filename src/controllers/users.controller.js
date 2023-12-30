@@ -173,9 +173,13 @@ export const getAllUsers = async (req, res, next) => {
         // Agrega los usuarios al req
         req.users = userDTOs;
 
-        // Devuelve un JSON con los UserDTOs
-        // res.json(userDTOs);
-        next();
+        // Verifica el encabezado 'Accept' de la solicitud
+        if (req.headers.accept === "application/json") {
+            // Si el cliente acepta JSON, envía una respuesta JSON
+            res.json(userDTOs);
+        } else {
+            next();
+        }
     } catch (error) {
         // Maneja el error
         return next(error);
