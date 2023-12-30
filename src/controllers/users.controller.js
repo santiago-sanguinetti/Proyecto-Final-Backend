@@ -233,7 +233,6 @@ export const deleteAllInactiveUsers = async (req, res, next) => {
 
 export const updateRole = async (req, res, next) => {
     try {
-        console.log("###params uid", req.params.uid);
         const user = await usersManager.getBy({ _id: req.params.uid });
         if (!user) {
             return res.status(404).send({ message: "Usuario no encontrado" });
@@ -241,6 +240,17 @@ export const updateRole = async (req, res, next) => {
 
         user.role = req.body.role;
         usersManager.updateRole(user);
+
+        res.status(200).redirect("/adminview");
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const deleteUser = async (req, res, next) => {
+    try {
+        console.log(req.params.uid);
+        usersManager.deleteUserById(req.params.uid);
 
         res.status(200).redirect("/adminview");
     } catch (error) {

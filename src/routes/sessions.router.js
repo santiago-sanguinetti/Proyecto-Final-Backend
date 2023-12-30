@@ -12,6 +12,7 @@ import {
     deleteAllInactiveUsers,
     emailInactiveUsers,
     updateRole,
+    deleteUser,
 } from "../controllers/users.controller.js";
 import userManager from "../dao/managers/users.manager.js";
 import { upload } from "../config/multer.config.js";
@@ -83,5 +84,6 @@ router.post(
 );
 
 router.post("/update-role/:uid", updateRole);
+router.post("/delete-user/:uid", deleteUser);
 
 export default router;

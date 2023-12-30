@@ -139,4 +139,12 @@ export default class Users {
             throw error;
         }
     };
+
+    deleteUserById = async (userId) => {
+        try {
+            await userModel.findByIdAndDelete(userId);
+        } catch (error) {
+            return next(error);
+        }
+    };
 }
