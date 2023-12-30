@@ -323,7 +323,7 @@ export const deleteProductById = async (req, res, next) => {
             socket.emit("product-deleted", req.params.pid);
 
             logger.info("Producto eliminado exitosamente");
-
+            res.status(200);
             return next();
         } else {
             logger.info(
