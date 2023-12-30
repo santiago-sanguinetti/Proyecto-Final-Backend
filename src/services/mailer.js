@@ -41,7 +41,7 @@ export const sendRecoveryMail = async (req, res) => {
             if (error) {
                 logger.error(error);
             } else {
-                logger.info(`Email enviado: ${info.response}`);
+                logger.info(`Email de recuperación enviado: ${info.response}`);
             }
         }
     );
@@ -86,7 +86,9 @@ export const sendAccountDeletionEmail = async (userEmail) => {
             if (error) {
                 logger.error(error);
             } else {
-                logger.info(`Email enviado: ${info.response}`);
+                logger.info(
+                    `Email de cuenta eliminada enviado: ${info.response}`
+                );
             }
         }
     );
@@ -131,7 +133,9 @@ export const sendProductDeletionEmail = async (userEmail) => {
             if (error) {
                 logger.error(error);
             } else {
-                logger.info(`Email enviado: ${info.response}`);
+                logger.info(
+                    `Email de producto eliminado enviado: ${info.response}`
+                );
             }
         }
     );
