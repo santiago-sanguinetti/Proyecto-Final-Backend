@@ -34,11 +34,6 @@ router.get("/profile", verifyToken, (req, res) => {
     res.render("profile", { user: req.session.user });
 });
 
-router.post("/logout", verifyToken, (req, res) => {
-    req.session.destroy();
-    res.redirect("/login");
-});
-
 //-------------------- Recovery --------------------
 router.get("/forgot-my-password", (req, res) => {
     res.render("forgotMyPassword");
