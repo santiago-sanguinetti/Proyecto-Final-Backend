@@ -29,3 +29,19 @@ export const showCart = async (req, res) => {
         res.status(500).send(err.message);
     }
 };
+
+export const adminView = async (req, res, next) => {
+    try {
+        if (req.user && req.user.role === "admin") {
+            // Si es así, renderiza la vista de administración
+            res.render("adminView", { isAdmin: true, users: req.users });
+        } else {
+            // Si no, redirige al usuario a la página de inicio de sesión o muestra un mensaje de error
+            res.status(403).send(
+                "No tienes permiso para acceder a esta página."
+            );
+        }
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+};
