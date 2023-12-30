@@ -16,6 +16,7 @@ describe("Testing módulo sesiones", () => {
         it("El endpoint POST /register debe registrar un usuario", async () => {
             const { statusCode, ok, body } = await requester
                 .post("/api/sessions/register")
+                .set("Accept", "application/json")
                 .send(user);
 
             userEmail = user.email;
@@ -29,6 +30,7 @@ describe("Testing módulo sesiones", () => {
         it("El endpoint POST /login debe iniciar sesión y devolver un token", async () => {
             const { statusCode, ok, body } = await requester
                 .post("/api/sessions/login")
+                .set("Accept", "application/json")
                 .send({
                     email: userEmail,
                     password: userPassword,

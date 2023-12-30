@@ -7,9 +7,12 @@ import {
     notFoundInDB,
     saveResetTokenError,
 } from "../services/errors/info.js";
-import { sendRecoveryMail } from "../services/mailer.js";
+import {
+    sendAccountDeletionEmail,
+    sendRecoveryMail,
+} from "../services/mailer.js";
 import bcrypt from "bcrypt";
-import { logger } from "../config/logger.config.js";
+import UserDTO from "../dao/DTOs/user.dto.js";
 
 const usersManager = new userManager();
 
@@ -153,6 +156,103 @@ export const uploadDocuments = async (req, res, next) => {
         await usersManager.save(user);
 
         res.status(200).send("Documentos cargados con éxito");
+    } catch (error) {
+        return next(error);
+    }
+};
+
+// Middleware para obtener todos los usuarios
+export const getAllUsers = async (req, res, next) => {
+    try {
+        // Obtiene todos los usuarios
+        const users = await usersManager.getAll();
+
+        // Convierte cada usuario a un objeto y luego a una instancia de UserDTO
+        const userDTOs = users.map((user) => new UserDTO(user));
+
+        // Agrega los usuarios al req
+        req.users = userDTOs;
+
+        // Devuelve un JSON con los UserDTOs
+        // res.json(userDTOs);
+        next();
+    } catch (error) {
+        // Maneja el error
+        return next(error);
+    }
+};
+
+export const getAllInactiveUsersEmail = async (req, res, next) => {
+    try {
+        // Obtiene todos los usuarios
+        const users = await usersManager.getAll();
+
+        // Define el tiempo límite
+        const cutoffTime = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); //2 días
+
+        const innactiveUsers = [];
+
+        for (const user of users) {
+            // Si la última conexión es antes que el tiempo límite, agrega el usuario al array
+            if (user.last_connection < cutoffTime)
+                innactiveUsers.push(user.email);
+        }
+        req.innactiveUsersEmail = innactiveUsers;
+        // Devuelve un JSON con los usuarios inactivos
+        // res.status(200).json(innactiveUsers);
+        return next();
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const emailInactiveUsers = async (req, res, next) => {
+    try {
+        for (const userEmail of req.innactiveUsersEmail) {
+            sendAccountDeletionEmail(userEmail);
+        }
+
+        res.status(200);
+        return next();
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const deleteAllInactiveUsers = async (req, res, next) => {
+    try {
+        for (const userEmail of req.innactiveUsersEmail) {
+            await usersManager.deleteUserByEmail(userEmail);
+        }
+
+        res.status(200).send("Usuarios eliminados con éxito.");
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const updateRole = async (req, res, next) => {
+    try {
+        const user = await usersManager.getBy({ _id: req.params.uid });
+        if (!user) {
+            return res.status(404).send({ message: "Usuario no encontrado" });
+        }
+
+        user.role = req.body.role;
+        usersManager.updateRole(user);
+
+        res.status(200).redirect("/adminview");
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const deleteUser = async (req, res, next) => {
+    try {
+        console.log(req.params.uid);
+        usersManager.deleteUserById(req.params.uid);
+
+        res.status(200).redirect("/adminview");
     } catch (error) {
         return next(error);
     }

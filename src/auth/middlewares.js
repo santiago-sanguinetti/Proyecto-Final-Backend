@@ -3,7 +3,11 @@ import jwt from "jsonwebtoken";
 import UserDTO from "../dao/DTOs/user.dto.js";
 import { dotenvConfig } from "../config/dotenv.config.js";
 import CustomError from "../services/errors/CustomError.js";
-import { tokenNotReceived, invalidToken } from "../services/errors/info.js";
+import {
+    tokenNotReceived,
+    invalidToken,
+    passportAuthenticateError,
+} from "../services/errors/info.js";
 import EErrors from "../services/errors/enums.js";
 import { logger } from "../config/logger.config.js";
 import userManager from "../dao/managers/users.manager.js";
@@ -14,7 +18,11 @@ const usersManager = new userManager();
 export const verifyToken = (req, res, next) => {
     logger.info("Verificando el token del usuario");
     const authHeader = req.header("Authorization");
-    if (!authHeader) {
+    let authCookie = "";
+
+    if (req.cookies.token) authCookie = req.cookies.token;
+
+    if (!authHeader && !authCookie) {
         const error = CustomError.createError({
             name: "Acceso denegado",
             cause: tokenNotReceived(),
@@ -25,7 +33,8 @@ export const verifyToken = (req, res, next) => {
         return next(error);
     }
 
-    const token = authHeader.split(" ")[1];
+    let token = authCookie;
+    if (authHeader) token = authHeader.split(" ")[1];
 
     if (!token) {
         const error = CustomError.createError({
@@ -110,14 +119,24 @@ export const authenticate = async (req, res, next) => {
                     expiresIn: "1h",
                 });
 
-                res.status(200).json({ token });
-
-                usersManager.updateLastConnection(user);
+                if (user.role !== "admin") {
+                    usersManager.updateLastConnection(user);
+                }
 
                 logger.info("Usuario autenticado exitosamente");
+
+                // Verifica el encabezado 'Accept' de la solicitud
+                if (req.headers.accept === "application/json") {
+                    // Si el cliente acepta JSON, envía una respuesta JSON
+                    res.status(200).json({ token });
+                } else {
+                    // Si no, renderiza una vista
+                    res.cookie("token", token, { httpOnly: true });
+                    res.render("profile", { user: body });
+                }
             });
         } catch (err) {
-            logger.fatal(`Error fatal: ${err}`);
+            logger.error(`Error: ${err}`);
             return next(err);
         }
     })(req, res, next);

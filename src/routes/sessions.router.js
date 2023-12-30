@@ -7,6 +7,12 @@ import {
     swapUserRole,
     updateUserStatus,
     uploadDocuments,
+    getAllUsers,
+    getAllInactiveUsersEmail,
+    deleteAllInactiveUsers,
+    emailInactiveUsers,
+    updateRole,
+    deleteUser,
 } from "../controllers/users.controller.js";
 import userManager from "../dao/managers/users.manager.js";
 import { upload } from "../config/multer.config.js";
@@ -14,6 +20,15 @@ import { upload } from "../config/multer.config.js";
 const usersManager = new userManager();
 
 const router = express.Router();
+
+router.get("/", getAllUsers);
+
+router.delete(
+    "/",
+    getAllInactiveUsersEmail,
+    emailInactiveUsers,
+    deleteAllInactiveUsers
+);
 
 router.post(
     "/register",
@@ -67,5 +82,8 @@ router.post(
     uploadDocuments,
     updateUserStatus
 );
+
+router.post("/update-role/:uid", updateRole);
+router.post("/delete-user/:uid", deleteUser);
 
 export default router;

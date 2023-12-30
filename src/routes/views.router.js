@@ -1,10 +1,13 @@
 import { Router } from "express";
 import { getAllProducts } from "../controllers/products.controller.js";
 import {
+    adminView,
     getRealtimeProducts,
     showCart,
 } from "../controllers/views.controller.js";
 import { verifyToken } from "../auth/middlewares.js";
+import { hasRole } from "../auth/middlewares.js";
+import { getAllUsers } from "../controllers/users.controller.js";
 
 const router = Router();
 
@@ -44,4 +47,7 @@ router.get("/forgot-my-password", (req, res) => {
 router.get("/api/sessions/reset-password/:token", (req, res) => {
     res.render("resetPassword", { token: req.params.token });
 });
+
+//-------------------- Admin view --------------------
+router.get("/adminview", verifyToken, hasRole("admin"), getAllUsers, adminView);
 export default router;

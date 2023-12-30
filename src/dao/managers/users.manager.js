@@ -1,4 +1,3 @@
-import { ReturnDocument } from "mongodb";
 import { logger } from "../../config/logger.config.js";
 import { userModel } from "../models/users.model.js";
 import bcrypt from "bcrypt";
@@ -22,8 +21,6 @@ export default class Users {
 
     save = async (user) => {
         try {
-            console.log(user);
-
             const dbUser = await userModel.findOne({ _id: user._id });
 
             if (!dbUser) {
@@ -128,6 +125,26 @@ export default class Users {
         } catch (error) {
             logger.error(error.message);
             throw error;
+        }
+    };
+
+    deleteUserByEmail = async (userEmail) => {
+        try {
+            const dbUser = await this.getBy({ email: userEmail });
+            if (dbUser) {
+                await userModel.findByIdAndDelete(dbUser._id);
+            }
+        } catch (error) {
+            logger.error(error.message);
+            throw error;
+        }
+    };
+
+    deleteUserById = async (userId) => {
+        try {
+            await userModel.findByIdAndDelete(userId);
+        } catch (error) {
+            return next(error);
         }
     };
 }
