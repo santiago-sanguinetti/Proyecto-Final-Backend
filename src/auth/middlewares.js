@@ -18,7 +18,7 @@ const usersManager = new userManager();
 export const verifyToken = (req, res, next) => {
     logger.info("Verificando el token del usuario");
     const authHeader = req.header("Authorization");
-    const authCookie = "";
+    let authCookie = "";
 
     if (req.cookies.token) authCookie = req.cookies.token;
 
