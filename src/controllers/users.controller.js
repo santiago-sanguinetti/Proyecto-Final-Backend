@@ -249,7 +249,6 @@ export const updateRole = async (req, res, next) => {
 
 export const deleteUser = async (req, res, next) => {
     try {
-        console.log(req.params.uid);
         usersManager.deleteUserById(req.params.uid);
 
         res.status(200).redirect("/adminview");
